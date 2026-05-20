@@ -30,9 +30,14 @@ class LeaveRequestForm(forms.ModelForm):
         fields = ['leave_type', 'start_date', 'end_date', 'days_count', 'reason']
         widgets = {
             'leave_type': forms.Select(attrs={'class': 'form-select'}),
-            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'days_count': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.5'}),
+            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'id': 'id_start_date'}),
+            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'id': 'id_end_date'}),
+            'days_count': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'id': 'id_days_count',
+                'readonly': True,
+                'step': '0.5',
+            }),
             'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
         labels = {
@@ -42,6 +47,16 @@ class LeaveRequestForm(forms.ModelForm):
             'days_count': 'Số ngày',
             'reason': 'Lý do',
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start = cleaned_data.get('start_date')
+        end = cleaned_data.get('end_date')
+        if start and end:
+            if end < start:
+                raise forms.ValidationError('Ngày kết thúc không được trước ngày bắt đầu.')
+            cleaned_data['days_count'] = (end - start).days + 1
+        return cleaned_data
 
 
 class WorkScheduleForm(forms.ModelForm):

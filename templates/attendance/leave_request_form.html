@@ -15,12 +15,36 @@
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
                     <div class="row g-3">
-                        <div class="col-12"><label class="form-label">{{ form.leave_type.label }}</label>{{ form.leave_type }}</div>
-                        <div class="col-md-6"><label class="form-label">{{ form.start_date.label }}</label>{{ form.start_date }}</div>
-                        <div class="col-md-6"><label class="form-label">{{ form.end_date.label }}</label>{{ form.end_date }}</div>
-                        <div class="col-md-4"><label class="form-label">{{ form.days_count.label }}</label>{{ form.days_count }}</div>
-                        <div class="col-12"><label class="form-label">{{ form.reason.label }}</label>{{ form.reason }}</div>
+                        <div class="col-12">
+                            <label class="form-label">{{ form.leave_type.label }}</label>
+                            {{ form.leave_type }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.start_date.label }}</label>
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}<div class="text-danger small mt-1">{{ form.start_date.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.end_date.label }}</label>
+                            {{ form.end_date }}
+                            {% if form.end_date.errors %}<div class="text-danger small mt-1">{{ form.end_date.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Số ngày nghỉ</label>
+                            <div class="input-group">
+                                {{ form.days_count }}
+                                <span class="input-group-text text-muted">ngày</span>
+                            </div>
+                            <div class="form-text">Tự động tính từ ngày bắt đầu đến kết thúc.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{{ form.reason.label }}</label>
+                            {{ form.reason }}
+                        </div>
                     </div>
                     <div class="mt-4 d-flex gap-2">
                         <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-1"></i>Gửi đơn</button>
@@ -31,4 +55,29 @@
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    const startInput = document.getElementById('id_start_date');
+    const endInput   = document.getElementById('id_end_date');
+    const daysInput  = document.getElementById('id_days_count');
+
+    function calcDays() {
+        const start = new Date(startInput.value);
+        const end   = new Date(endInput.value);
+        if (!startInput.value || !endInput.value || end < start) {
+            daysInput.value = '';
+            return;
+        }
+        const diff = Math.round((end - start) / 86400000) + 1;
+        daysInput.value = diff;
+    }
+
+    startInput.addEventListener('change', calcDays);
+    endInput.addEventListener('change', calcDays);
+
+    // Tính lại nếu form bị trả về do lỗi validate
+    if (startInput.value && endInput.value) calcDays();
+})();
+</script>
 {% endblock %}
