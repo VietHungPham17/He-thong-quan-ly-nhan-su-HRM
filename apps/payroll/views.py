@@ -7,9 +7,10 @@ from django.utils import timezone
 from .models import Payroll, AllowanceItem, DeductionItem
 from .forms import PayrollForm, GeneratePayrollForm
 from apps.employees.models import Employee
+from apps.accounts.mixins import HRRequiredMixin
 
 
-class PayrollListView(LoginRequiredMixin, ListView):
+class PayrollListView(HRRequiredMixin, ListView):
     model = Payroll
     template_name = 'payroll/payroll_list.html'
     context_object_name = 'payrolls'
@@ -39,7 +40,6 @@ class PayrollListView(LoginRequiredMixin, ListView):
         ctx['status_choices'] = Payroll.STATUS_CHOICES
         ctx['selected_status'] = self.request.GET.get('status', '')
 
-        # Summary
         qs = self.get_queryset()
         ctx['total_net'] = qs.aggregate(s=Sum('net_salary'))['s'] or 0
         ctx['total_basic'] = qs.aggregate(s=Sum('basic_salary'))['s'] or 0
@@ -51,13 +51,28 @@ class PayrollDetailView(LoginRequiredMixin, DetailView):
     template_name = 'payroll/payslip.html'
     context_object_name = 'payroll'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        # Employee chỉ được xem phiếu lương của chính mình
+        if not request.user.can_manage:
+            payroll = self.get_object()
+            try:
+                if payroll.employee != request.user.employee_profile:
+                    messages.error(request, 'Bạn chỉ có thể xem phiếu lương của chính mình.')
+                    return redirect('employees:dashboard')
+            except Exception:
+                messages.error(request, 'Bạn không có quyền truy cập.')
+                return redirect('employees:dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         return Payroll.objects.select_related(
             'employee', 'employee__department', 'employee__position'
         ).prefetch_related('allowance_items', 'deduction_items')
 
 
-class PayrollCreateView(LoginRequiredMixin, CreateView):
+class PayrollCreateView(HRRequiredMixin, CreateView):
     model = Payroll
     form_class = PayrollForm
     template_name = 'payroll/payroll_form.html'
@@ -71,7 +86,7 @@ class PayrollCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class PayrollUpdateView(LoginRequiredMixin, UpdateView):
+class PayrollUpdateView(HRRequiredMixin, UpdateView):
     model = Payroll
     form_class = PayrollForm
     template_name = 'payroll/payroll_form.html'
@@ -87,7 +102,7 @@ class PayrollUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class GeneratePayrollView(LoginRequiredMixin, FormView):
+class GeneratePayrollView(HRRequiredMixin, FormView):
     template_name = 'payroll/generate_payroll.html'
     form_class = GeneratePayrollForm
     success_url = reverse_lazy('payroll:payroll_list')
@@ -106,10 +121,9 @@ class GeneratePayrollView(LoginRequiredMixin, FormView):
             if Payroll.objects.filter(employee=emp, month=month, year=year).exists():
                 skipped += 1
                 continue
-            # Get latest contract salary
             contract = emp.contracts.filter(status='active').order_by('-start_date').first()
             basic = contract.salary if contract else 0
-            p = Payroll.objects.create(
+            Payroll.objects.create(
                 employee=emp,
                 month=month,
                 year=year,
@@ -125,3 +139,6 @@ class GeneratePayrollView(LoginRequiredMixin, FormView):
             f'Đã tạo {created} phiếu lương tháng {month}/{year}. Bỏ qua {skipped} (đã tồn tại).'
         )
         return super().form_valid(form)
+
+
+from django.shortcuts import redirect

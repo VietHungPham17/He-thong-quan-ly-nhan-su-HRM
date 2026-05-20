@@ -9,6 +9,7 @@ from django.views.generic import (
 from django.utils import timezone
 from .models import Department, Position, Employee, Contract
 from .forms import DepartmentForm, PositionForm, EmployeeForm, ContractForm
+from apps.accounts.mixins import HRRequiredMixin, ManagerRequiredMixin
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -48,7 +49,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 # ── Department Views ──────────────────────────────────────────────────────────
 
-class DepartmentListView(LoginRequiredMixin, ListView):
+class DepartmentListView(ManagerRequiredMixin, ListView):
     model = Department
     template_name = 'employees/department_list.html'
     context_object_name = 'departments'
@@ -69,7 +70,7 @@ class DepartmentListView(LoginRequiredMixin, ListView):
         return ctx
 
 
-class DepartmentCreateView(LoginRequiredMixin, CreateView):
+class DepartmentCreateView(HRRequiredMixin, CreateView):
     model = Department
     form_class = DepartmentForm
     template_name = 'employees/department_form.html'
@@ -80,7 +81,7 @@ class DepartmentCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class DepartmentUpdateView(LoginRequiredMixin, UpdateView):
+class DepartmentUpdateView(HRRequiredMixin, UpdateView):
     model = Department
     form_class = DepartmentForm
     template_name = 'employees/department_form.html'
@@ -91,7 +92,7 @@ class DepartmentUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class DepartmentDeleteView(LoginRequiredMixin, DeleteView):
+class DepartmentDeleteView(HRRequiredMixin, DeleteView):
     model = Department
     template_name = 'employees/department_confirm_delete.html'
     success_url = reverse_lazy('employees:department_list')
@@ -103,7 +104,7 @@ class DepartmentDeleteView(LoginRequiredMixin, DeleteView):
 
 # ── Position Views ────────────────────────────────────────────────────────────
 
-class PositionListView(LoginRequiredMixin, ListView):
+class PositionListView(ManagerRequiredMixin, ListView):
     model = Position
     template_name = 'employees/position_list.html'
     context_object_name = 'positions'
@@ -127,7 +128,7 @@ class PositionListView(LoginRequiredMixin, ListView):
         return ctx
 
 
-class PositionCreateView(LoginRequiredMixin, CreateView):
+class PositionCreateView(HRRequiredMixin, CreateView):
     model = Position
     form_class = PositionForm
     template_name = 'employees/position_form.html'
@@ -138,7 +139,7 @@ class PositionCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class PositionUpdateView(LoginRequiredMixin, UpdateView):
+class PositionUpdateView(HRRequiredMixin, UpdateView):
     model = Position
     form_class = PositionForm
     template_name = 'employees/position_form.html'
@@ -149,7 +150,7 @@ class PositionUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class PositionDeleteView(LoginRequiredMixin, DeleteView):
+class PositionDeleteView(HRRequiredMixin, DeleteView):
     model = Position
     template_name = 'employees/position_confirm_delete.html'
     success_url = reverse_lazy('employees:position_list')
@@ -161,7 +162,7 @@ class PositionDeleteView(LoginRequiredMixin, DeleteView):
 
 # ── Employee Views ────────────────────────────────────────────────────────────
 
-class EmployeeListView(LoginRequiredMixin, ListView):
+class EmployeeListView(ManagerRequiredMixin, ListView):
     model = Employee
     template_name = 'employees/employee_list.html'
     context_object_name = 'employees'
@@ -201,6 +202,21 @@ class EmployeeDetailView(LoginRequiredMixin, DetailView):
     template_name = 'employees/employee_detail.html'
     context_object_name = 'employee'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        # Employee chỉ được xem hồ sơ của chính mình
+        if not request.user.can_manage:
+            try:
+                own = request.user.employee_profile
+                if own.pk != int(kwargs.get('pk', 0)):
+                    messages.error(request, 'Bạn chỉ có thể xem hồ sơ của chính mình.')
+                    return redirect('employees:employee_detail', pk=own.pk)
+            except Exception:
+                messages.error(request, 'Bạn không có hồ sơ nhân viên.')
+                return redirect('employees:dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         return Employee.objects.select_related('department', 'position', 'user')
 
@@ -210,7 +226,7 @@ class EmployeeDetailView(LoginRequiredMixin, DetailView):
         return ctx
 
 
-class EmployeeCreateView(LoginRequiredMixin, CreateView):
+class EmployeeCreateView(HRRequiredMixin, CreateView):
     model = Employee
     form_class = EmployeeForm
     template_name = 'employees/employee_form.html'
@@ -226,7 +242,7 @@ class EmployeeCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class EmployeeUpdateView(LoginRequiredMixin, UpdateView):
+class EmployeeUpdateView(HRRequiredMixin, UpdateView):
     model = Employee
     form_class = EmployeeForm
     template_name = 'employees/employee_form.html'
@@ -244,7 +260,7 @@ class EmployeeUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class EmployeeDeleteView(LoginRequiredMixin, DeleteView):
+class EmployeeDeleteView(HRRequiredMixin, DeleteView):
     model = Employee
     template_name = 'employees/employee_confirm_delete.html'
     success_url = reverse_lazy('employees:employee_list')
@@ -256,7 +272,7 @@ class EmployeeDeleteView(LoginRequiredMixin, DeleteView):
 
 # ── Contract Views ────────────────────────────────────────────────────────────
 
-class ContractCreateView(LoginRequiredMixin, CreateView):
+class ContractCreateView(HRRequiredMixin, CreateView):
     model = Contract
     form_class = ContractForm
     template_name = 'employees/contract_form.html'
@@ -277,3 +293,7 @@ class ContractCreateView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         return reverse_lazy('employees:employee_detail', kwargs={'pk': self.kwargs['employee_pk']})
+
+
+# fix missing import
+from django.shortcuts import redirect

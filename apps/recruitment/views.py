@@ -5,9 +5,10 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from .models import JobPosting, Candidate, Interview
 from .forms import JobPostingForm, CandidateForm, InterviewForm
+from apps.accounts.mixins import HRRequiredMixin, ManagerRequiredMixin
 
 
-class JobPostingListView(LoginRequiredMixin, ListView):
+class JobPostingListView(ManagerRequiredMixin, ListView):
     model = JobPosting
     template_name = 'recruitment/job_posting_list.html'
     context_object_name = 'job_postings'
@@ -33,7 +34,7 @@ class JobPostingListView(LoginRequiredMixin, ListView):
         return ctx
 
 
-class JobPostingCreateView(LoginRequiredMixin, CreateView):
+class JobPostingCreateView(HRRequiredMixin, CreateView):
     model = JobPosting
     form_class = JobPostingForm
     template_name = 'recruitment/job_posting_form.html'
@@ -45,7 +46,7 @@ class JobPostingCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class JobPostingUpdateView(LoginRequiredMixin, UpdateView):
+class JobPostingUpdateView(HRRequiredMixin, UpdateView):
     model = JobPosting
     form_class = JobPostingForm
     template_name = 'recruitment/job_posting_form.html'
@@ -56,7 +57,7 @@ class JobPostingUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class JobPostingDeleteView(LoginRequiredMixin, DeleteView):
+class JobPostingDeleteView(HRRequiredMixin, DeleteView):
     model = JobPosting
     template_name = 'recruitment/job_posting_confirm_delete.html'
     success_url = reverse_lazy('recruitment:job_posting_list')
@@ -66,7 +67,7 @@ class JobPostingDeleteView(LoginRequiredMixin, DeleteView):
         return super().form_valid(form)
 
 
-class CandidatePipelineView(LoginRequiredMixin, TemplateView):
+class CandidatePipelineView(ManagerRequiredMixin, TemplateView):
     template_name = 'recruitment/candidate_pipeline.html'
 
     def get_context_data(self, **kwargs):
@@ -97,7 +98,7 @@ class CandidatePipelineView(LoginRequiredMixin, TemplateView):
         return ctx
 
 
-class CandidateListView(LoginRequiredMixin, ListView):
+class CandidateListView(ManagerRequiredMixin, ListView):
     model = Candidate
     template_name = 'recruitment/candidate_list.html'
     context_object_name = 'candidates'
@@ -126,7 +127,7 @@ class CandidateListView(LoginRequiredMixin, ListView):
         return ctx
 
 
-class CandidateCreateView(LoginRequiredMixin, CreateView):
+class CandidateCreateView(HRRequiredMixin, CreateView):
     model = Candidate
     form_class = CandidateForm
     template_name = 'recruitment/candidate_form.html'
@@ -137,7 +138,7 @@ class CandidateCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class CandidateUpdateView(LoginRequiredMixin, UpdateView):
+class CandidateUpdateView(HRRequiredMixin, UpdateView):
     model = Candidate
     form_class = CandidateForm
     template_name = 'recruitment/candidate_form.html'
@@ -148,7 +149,7 @@ class CandidateUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class InterviewListView(LoginRequiredMixin, ListView):
+class InterviewListView(ManagerRequiredMixin, ListView):
     model = Interview
     template_name = 'recruitment/interview_list.html'
     context_object_name = 'interviews'
@@ -160,7 +161,7 @@ class InterviewListView(LoginRequiredMixin, ListView):
         )
 
 
-class InterviewCreateView(LoginRequiredMixin, CreateView):
+class InterviewCreateView(ManagerRequiredMixin, CreateView):
     model = Interview
     form_class = InterviewForm
     template_name = 'recruitment/interview_form.html'

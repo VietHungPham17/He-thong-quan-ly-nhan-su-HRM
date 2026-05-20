@@ -37,7 +37,8 @@
                 </a>
             </li>
 
-            <!-- Nhân viên -->
+            <!-- Nhân viên: chỉ can_manage mới thấy -->
+            {% if user.can_manage %}
             <li class="nav-item">
                 <a class="nav-link collapsed {% if 'employees' in request.resolver_match.namespace %}active{% endif %}"
                    data-bs-toggle="collapse" href="#employeeMenu" role="button">
@@ -68,6 +69,7 @@
                     </ul>
                 </div>
             </li>
+            {% endif %}
 
             <!-- Chấm công -->
             <li class="nav-item">
@@ -79,12 +81,14 @@
                 </a>
                 <div class="collapse {% if 'attendance' in request.resolver_match.namespace %}show{% endif %}" id="attendanceMenu">
                     <ul class="nav flex-column ms-3">
+                        {% if user.can_manage %}
                         <li class="nav-item">
                             <a class="nav-link sub-link {% if request.resolver_match.url_name == 'attendance_list' %}active{% endif %}"
                                href="{% url 'attendance:attendance_list' %}">
                                 <i class="fas fa-calendar-check me-2"></i>Bảng chấm công
                             </a>
                         </li>
+                        {% endif %}
                         <li class="nav-item">
                             <a class="nav-link sub-link {% if 'leave' in request.resolver_match.url_name %}active{% endif %}"
                                href="{% url 'attendance:leave_request_list' %}">
@@ -95,7 +99,8 @@
                 </div>
             </li>
 
-            <!-- Tiền lương -->
+            <!-- Tiền lương: HR+Admin thấy bảng lương; Employee thấy phiếu lương cá nhân -->
+            {% if user.role == 'admin' or user.role == 'hr' %}
             <li class="nav-item">
                 <a class="nav-link collapsed {% if 'payroll' in request.resolver_match.namespace %}active{% endif %}"
                    data-bs-toggle="collapse" href="#payrollMenu" role="button">
@@ -120,8 +125,10 @@
                     </ul>
                 </div>
             </li>
+            {% endif %}
 
-            <!-- Tuyển dụng -->
+            <!-- Tuyển dụng: chỉ can_manage mới thấy -->
+            {% if user.can_manage %}
             <li class="nav-item">
                 <a class="nav-link collapsed {% if 'recruitment' in request.resolver_match.namespace %}active{% endif %}"
                    data-bs-toggle="collapse" href="#recruitmentMenu" role="button">
@@ -152,6 +159,7 @@
                     </ul>
                 </div>
             </li>
+            {% endif %}
 
             <hr class="sidebar-divider">
 
