@@ -29,7 +29,7 @@
                     <tr>
                         <td class="fw-semibold">{{ iv.candidate.full_name }}</td>
                         <td class="text-muted small">{{ iv.candidate.applied_position.title }}</td>
-                        <td>{{ iv.interviewer.get_full_name|default:iv.interviewer.username|default:"—" }}</td>
+                        <td>{% if iv.interviewer %}{{ iv.interviewer.get_full_name|default:iv.interviewer.username }}{% else %}—{% endif %}</td>
                         <td>{{ iv.scheduled_at|date:"d/m/Y H:i" }}<br><small class="text-muted">{{ iv.duration_minutes }} phút</small></td>
                         <td><span class="badge bg-info-subtle text-info">{{ iv.get_interview_type_display }}</span></td>
                         <td>
