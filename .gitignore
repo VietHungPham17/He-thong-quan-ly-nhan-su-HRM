@@ -30,11 +30,6 @@ media/
 .idea/
 *.swp
 *.swo
-
-# Claude Code
-.claude/
-*.claude
-
 # macOS
 .DS_Store
 Thumbs.db
