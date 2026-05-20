@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Ứng viên{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'recruitment:job_posting_list' %}">Tuyển dụng</a></li>
+<li class="breadcrumb-item active">Ứng viên</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-user-tie me-2 text-primary"></i>Danh sách ứng viên</h4>
+    <div class="d-flex gap-2">
+        <a href="{% url 'recruitment:candidate_pipeline' %}" class="btn btn-outline-primary">
+            <i class="fas fa-columns me-1"></i>Kanban
+        </a>
+        <a href="{% url 'recruitment:candidate_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Thêm ứng viên
+        </a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body py-3">
+        <form method="get" class="d-flex gap-2 flex-wrap">
+            <div class="input-group" style="max-width:280px">
+                <span class="input-group-text"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Tên, email...">
+            </div>
+            <select name="job" class="form-select" style="max-width:220px">
+                <option value="">Tất cả vị trí</option>
+                {% for job in job_postings %}
+                <option value="{{ job.id }}" {% if selected_job == job.id|stringformat:"s" %}selected{% endif %}>{{ job.title }}</option>
+                {% endfor %}
+            </select>
+            <select name="status" class="form-select" style="max-width:160px">
+                <option value="">Tất cả TT</option>
+                {% for val, label in status_choices %}
+                <option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Lọc</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Ứng viên</th>
+                        <th>Vị trí</th>
+                        <th>Nguồn</th>
+                        <th>Ngày nộp</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in candidates %}
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">{{ c.full_name }}</div>
+                            <div class="text-muted small">{{ c.email }} &bull; {{ c.phone }}</div>
+                        </td>
+                        <td>{{ c.applied_position.title }}</td>
+                        <td><span class="badge bg-info-subtle text-info">{{ c.get_source_display }}</span></td>
+                        <td>{{ c.applied_at|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if c.status == 'new' %}<span class="badge bg-secondary">Mới</span>
+                            {% elif c.status == 'screening' %}<span class="badge bg-info">Sàng lọc</span>
+                            {% elif c.status == 'interview' %}<span class="badge bg-warning">Phỏng vấn</span>
+                            {% elif c.status == 'offer' %}<span class="badge bg-primary">Đề nghị</span>
+                            {% elif c.status == 'hired' %}<span class="badge bg-success">Đã tuyển</span>
+                            {% else %}<span class="badge bg-danger">Từ chối</span>{% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'recruitment:candidate_edit' c.pk %}" class="btn btn-sm btn-outline-warning">
+                                <i class="fas fa-pen"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">Không có ứng viên nào</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="card-footer bg-transparent">
+        <nav><ul class="pagination pagination-sm mb-0 justify-content-center">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}"><i class="fas fa-chevron-left"></i></a></li>{% endif %}
+            {% for num in page_obj.paginator.page_range %}{% if page_obj.number == num %}<li class="page-item active"><span class="page-link">{{ num }}</span></li>{% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}<li class="page-item"><a class="page-link" href="?page={{ num }}&q={{ q }}">{{ num }}</a></li>{% endif %}{% endfor %}
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}"><i class="fas fa-chevron-right"></i></a></li>{% endif %}
+        </ul></nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

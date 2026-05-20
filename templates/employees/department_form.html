@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}Sửa phòng ban{% else %}Thêm phòng ban{% endif %}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'employees:department_list' %}">Phòng ban</a></li>
+<li class="breadcrumb-item active">{% if object %}Sửa{% else %}Thêm{% endif %}</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-building me-2 text-primary"></i>{% if object %}Cập nhật phòng ban{% else %}Thêm phòng ban mới{% endif %}</h4>
+    <a href="{% url 'employees:department_list' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Quay lại</a>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">{{ form.name.label }} <span class="text-danger">*</span></label>
+                            {{ form.name }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.code.label }} <span class="text-danger">*</span></label>
+                            {{ form.code }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{{ form.manager.label }}</label>
+                            {{ form.manager }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{{ form.description.label }}</label>
+                            {{ form.description }}
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Lưu</button>
+                        <a href="{% url 'employees:department_list' %}" class="btn btn-outline-secondary">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}Danh sách nhân viên{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'employees:dashboard' %}">Nhân viên</a></li>
+<li class="breadcrumb-item active">Danh sách</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-people-group me-2 text-primary"></i>Danh sách nhân viên</h4>
+    <a href="{% url 'employees:employee_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i>Thêm nhân viên
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label mb-1">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Tên, mã NV, email, SĐT...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label mb-1">Phòng ban</label>
+                <select name="department" class="form-select">
+                    <option value="">Tất cả phòng ban</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if selected_dept == dept.id|stringformat:"s" %}selected{% endif %}>{{ dept.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label mb-1">Trạng thái</label>
+                <select name="status" class="form-select">
+                    <option value="">Tất cả</option>
+                    {% for val, label in status_choices %}
+                    <option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill">
+                    <i class="fas fa-filter me-1"></i>Lọc
+                </button>
+                <a href="{% url 'employees:employee_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-rotate-right"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Kết quả: <strong>{{ page_obj.paginator.count }}</strong> nhân viên</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Nhân viên</th>
+                        <th>Phòng ban</th>
+                        <th>Chức vụ</th>
+                        <th>Ngày vào</th>
+                        <th>Loại</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in employees %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                {% if emp.avatar %}
+                                    <img src="{{ emp.avatar.url }}" class="employee-avatar" alt="">
+                                {% else %}
+                                    <div class="avatar-placeholder">{{ emp.full_name|first|upper }}</div>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-semibold">
+                                        <a href="{% url 'employees:employee_detail' emp.pk %}" class="text-dark text-decoration-none">
+                                            {{ emp.full_name }}
+                                        </a>
+                                    </div>
+                                    <div class="text-muted small">{{ emp.employee_id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ emp.department.name|default:"—" }}</td>
+                        <td>{{ emp.position.name|default:"—" }}</td>
+                        <td>{{ emp.hire_date|date:"d/m/Y"|default:"—" }}</td>
+                        <td>
+                            {% if emp.employment_type == 'full_time' %}
+                                <span class="badge bg-primary-subtle text-primary">Toàn thời gian</span>
+                            {% elif emp.employment_type == 'part_time' %}
+                                <span class="badge bg-info-subtle text-info">Bán thời gian</span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning">Hợp đồng</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if emp.status == 'active' %}
+                                <span class="badge bg-success"><i class="fas fa-circle me-1" style="font-size:8px"></i>Đang làm</span>
+                            {% elif emp.status == 'inactive' %}
+                                <span class="badge bg-warning">Tạm nghỉ</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Đã nghỉ</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'employees:employee_detail' emp.pk %}" class="btn btn-outline-info" data-bs-toggle="tooltip" title="Chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'employees:employee_edit' emp.pk %}" class="btn btn-outline-warning" data-bs-toggle="tooltip" title="Chỉnh sửa">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <a href="{% url 'employees:employee_delete' emp.pk %}" class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <i class="fas fa-users-slash text-muted mb-2" style="font-size:2rem"></i>
+                            <p class="text-muted mb-0">Không tìm thấy nhân viên nào</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="card-footer bg-transparent">
+        <nav>
+            <ul class="pagination pagination-sm mb-0 justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&department={{ selected_dept }}&status={{ selected_status }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}&q={{ q }}&department={{ selected_dept }}&status={{ selected_status }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&department={{ selected_dept }}&status={{ selected_status }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

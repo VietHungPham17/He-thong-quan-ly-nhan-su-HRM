@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Lịch phỏng vấn{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'recruitment:job_posting_list' %}">Tuyển dụng</a></li>
+<li class="breadcrumb-item active">Phỏng vấn</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-comments me-2 text-primary"></i>Lịch phỏng vấn</h4>
+    <a href="{% url 'recruitment:interview_create' %}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Lên lịch</a>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Ứng viên</th>
+                        <th>Vị trí</th>
+                        <th>Người PV</th>
+                        <th>Thời gian</th>
+                        <th>Hình thức</th>
+                        <th>Trạng thái</th>
+                        <th>Đánh giá</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for iv in interviews %}
+                    <tr>
+                        <td class="fw-semibold">{{ iv.candidate.full_name }}</td>
+                        <td class="text-muted small">{{ iv.candidate.applied_position.title }}</td>
+                        <td>{{ iv.interviewer.get_full_name|default:iv.interviewer.username|default:"—" }}</td>
+                        <td>{{ iv.scheduled_at|date:"d/m/Y H:i" }}<br><small class="text-muted">{{ iv.duration_minutes }} phút</small></td>
+                        <td><span class="badge bg-info-subtle text-info">{{ iv.get_interview_type_display }}</span></td>
+                        <td>
+                            {% if iv.status == 'scheduled' %}<span class="badge bg-primary">Đã lên lịch</span>
+                            {% elif iv.status == 'completed' %}<span class="badge bg-success">Hoàn thành</span>
+                            {% else %}<span class="badge bg-danger">Đã hủy</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if iv.rating %}
+                            {% for i in "12345" %}
+                            <i class="fas fa-star {% if forloop.counter <= iv.rating %}text-warning{% else %}text-muted{% endif %}" style="font-size:12px"></i>
+                            {% endfor %}
+                            {% else %}—{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-4">Chưa có lịch phỏng vấn</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="card-footer bg-transparent">
+        <nav><ul class="pagination pagination-sm mb-0 justify-content-center">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a></li>{% endif %}
+            {% for num in page_obj.paginator.page_range %}{% if page_obj.number == num %}<li class="page-item active"><span class="page-link">{{ num }}</span></li>{% endif %}{% endfor %}
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a></li>{% endif %}
+        </ul></nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-house-chimney me-2 text-primary"></i>Dashboard</h4>
+    <small class="text-muted">Tổng quan hệ thống quản lý nhân sự</small>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100" style="background:linear-gradient(135deg,#3b7dd8,#2d6bc4)">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:rgba(255,255,255,0.2)">
+                    <i class="fas fa-users text-white"></i>
+                </div>
+                <div class="text-white">
+                    <div style="font-size:28px;font-weight:700;line-height:1">{{ total_employees }}</div>
+                    <div style="font-size:13px;opacity:0.85">Tổng nhân viên</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100" style="background:linear-gradient(135deg,#28a745,#20913b)">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:rgba(255,255,255,0.2)">
+                    <i class="fas fa-user-plus text-white"></i>
+                </div>
+                <div class="text-white">
+                    <div style="font-size:28px;font-weight:700;line-height:1">{{ new_this_month }}</div>
+                    <div style="font-size:13px;opacity:0.85">Mới tháng này</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:rgba(255,255,255,0.2)">
+                    <i class="fas fa-umbrella-beach text-white"></i>
+                </div>
+                <div class="text-white">
+                    <div style="font-size:28px;font-weight:700;line-height:1">{{ pending_leaves }}</div>
+                    <div style="font-size:13px;opacity:0.85">Đơn nghỉ chờ duyệt</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed)">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:rgba(255,255,255,0.2)">
+                    <i class="fas fa-money-bill-wave text-white"></i>
+                </div>
+                <div class="text-white">
+                    <div style="font-size:28px;font-weight:700;line-height:1">{{ payroll_this_month }}</div>
+                    <div style="font-size:13px;opacity:0.85">Phiếu lương tháng này</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent Employees -->
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-semibold"><i class="fas fa-users me-2 text-primary"></i>Nhân viên mới nhất</h6>
+                <a href="{% url 'employees:employee_list' %}" class="btn btn-sm btn-outline-primary">
+                    Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nhân viên</th>
+                                <th>Phòng ban</th>
+                                <th>Chức vụ</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for emp in recent_employees %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        {% if emp.avatar %}
+                                            <img src="{{ emp.avatar.url }}" class="employee-avatar" alt="">
+                                        {% else %}
+                                            <div class="avatar-placeholder">{{ emp.full_name|first|upper }}</div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-semibold">{{ emp.full_name }}</div>
+                                            <div class="text-muted small">{{ emp.employee_id }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ emp.department.name|default:"—" }}</td>
+                                <td>{{ emp.position.name|default:"—" }}</td>
+                                <td>
+                                    {% if emp.status == 'active' %}
+                                        <span class="badge bg-success">Đang làm việc</span>
+                                    {% elif emp.status == 'inactive' %}
+                                        <span class="badge bg-warning">Tạm nghỉ</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Đã nghỉ</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted py-4">Chưa có nhân viên nào</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Departments -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-semibold"><i class="fas fa-building me-2 text-primary"></i>Phòng ban</h6>
+                <a href="{% url 'employees:department_list' %}" class="btn btn-sm btn-outline-primary">
+                    Xem tất cả
+                </a>
+            </div>
+            <div class="card-body">
+                {% for dept in departments %}
+                <div class="d-flex align-items-center justify-content-between py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div>
+                        <div class="fw-semibold small">{{ dept.name }}</div>
+                        <div class="text-muted" style="font-size:11px">{{ dept.code }}</div>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary fw-semibold">{{ dept.emp_count }} NV</span>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-3">Chưa có phòng ban</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-3 mt-1">
+    <div class="col-12">
+        <h6 class="section-title">Thao tác nhanh</h6>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'employees:employee_create' %}" class="card text-decoration-none h-100">
+            <div class="card-body text-center py-3">
+                <div class="mb-2" style="font-size:24px;color:#3b7dd8"><i class="fas fa-user-plus"></i></div>
+                <div class="small fw-semibold text-dark">Thêm nhân viên</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'attendance:attendance_create' %}" class="card text-decoration-none h-100">
+            <div class="card-body text-center py-3">
+                <div class="mb-2" style="font-size:24px;color:#28a745"><i class="fas fa-calendar-plus"></i></div>
+                <div class="small fw-semibold text-dark">Chấm công</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'payroll:generate_payroll' %}" class="card text-decoration-none h-100">
+            <div class="card-body text-center py-3">
+                <div class="mb-2" style="font-size:24px;color:#8b5cf6"><i class="fas fa-wand-magic-sparkles"></i></div>
+                <div class="small fw-semibold text-dark">Tạo lương</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'recruitment:job_posting_create' %}" class="card text-decoration-none h-100">
+            <div class="card-body text-center py-3">
+                <div class="mb-2" style="font-size:24px;color:#f59e0b"><i class="fas fa-briefcase"></i></div>
+                <div class="small fw-semibold text-dark">Đăng tuyển</div>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

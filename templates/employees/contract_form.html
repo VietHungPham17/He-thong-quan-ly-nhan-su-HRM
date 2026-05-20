@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Thêm hợp đồng{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'employees:employee_list' %}">Nhân viên</a></li>
+<li class="breadcrumb-item"><a href="{% url 'employees:employee_detail' employee.pk %}">{{ employee.full_name }}</a></li>
+<li class="breadcrumb-item active">Thêm hợp đồng</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-file-contract me-2 text-primary"></i>Thêm hợp đồng - {{ employee.full_name }}</h4>
+    <a href="{% url 'employees:employee_detail' employee.pk %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Quay lại</a>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">{{ form.contract_type.label }}</label>{{ form.contract_type }}</div>
+                        <div class="col-md-6"><label class="form-label">{{ form.status.label }}</label>{{ form.status }}</div>
+                        <div class="col-md-6"><label class="form-label">{{ form.start_date.label }}</label>{{ form.start_date }}</div>
+                        <div class="col-md-6"><label class="form-label">{{ form.end_date.label }}</label>{{ form.end_date }}</div>
+                        <div class="col-md-6"><label class="form-label">{{ form.salary.label }}</label>{{ form.salary }}</div>
+                        <div class="col-md-6"><label class="form-label">{{ form.signed_date.label }}</label>{{ form.signed_date }}</div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Lưu hợp đồng</button>
+                        <a href="{% url 'employees:employee_detail' employee.pk %}" class="btn btn-outline-secondary">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

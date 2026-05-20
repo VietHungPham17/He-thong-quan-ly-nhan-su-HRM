@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ employee.full_name }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'employees:employee_list' %}">Nhân viên</a></li>
+<li class="breadcrumb-item active">{{ employee.full_name }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-id-card me-2 text-primary"></i>Chi tiết nhân viên</h4>
+    <div class="d-flex gap-2">
+        <a href="{% url 'employees:employee_edit' employee.pk %}" class="btn btn-warning">
+            <i class="fas fa-pen me-1"></i>Chỉnh sửa
+        </a>
+        <a href="{% url 'employees:employee_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Avatar & Quick Info -->
+    <div class="col-md-3">
+        <div class="card text-center mb-3">
+            <div class="card-body py-4">
+                {% if employee.avatar %}
+                    <img src="{{ employee.avatar.url }}" alt="" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid #e8ecf0;">
+                {% else %}
+                    <div class="avatar-placeholder avatar-lg mx-auto mb-2">{{ employee.full_name|first|upper }}</div>
+                {% endif %}
+                <h5 class="mt-3 mb-1">{{ employee.full_name }}</h5>
+                <div class="text-muted small mb-2">{{ employee.employee_id }}</div>
+                {% if employee.status == 'active' %}
+                    <span class="badge bg-success">Đang làm việc</span>
+                {% elif employee.status == 'inactive' %}
+                    <span class="badge bg-warning">Tạm nghỉ</span>
+                {% else %}
+                    <span class="badge bg-secondary">Đã nghỉ việc</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="section-title">Thông tin nhanh</div>
+                <div class="mb-2">
+                    <small class="text-muted d-block">Phòng ban</small>
+                    <span class="fw-semibold">{{ employee.department.name|default:"—" }}</span>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted d-block">Chức vụ</small>
+                    <span class="fw-semibold">{{ employee.position.name|default:"—" }}</span>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted d-block">Ngày vào làm</small>
+                    <span class="fw-semibold">{{ employee.hire_date|date:"d/m/Y"|default:"—" }}</span>
+                </div>
+                <div>
+                    <small class="text-muted d-block">Loại hình</small>
+                    <span class="fw-semibold">{{ employee.get_employment_type_display }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Tabs -->
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#personal">
+                            <i class="fas fa-user me-1"></i>Cá nhân
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#work">
+                            <i class="fas fa-briefcase me-1"></i>Công việc
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#bank">
+                            <i class="fas fa-building-columns me-1"></i>Ngân hàng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#contracts">
+                            <i class="fas fa-file-contract me-1"></i>Hợp đồng
+                            {% if contracts %}<span class="badge bg-primary ms-1">{{ contracts|length }}</span>{% endif %}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content">
+                    <!-- Personal Tab -->
+                    <div class="tab-pane fade show active" id="personal">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="text-muted small">Họ và tên</label>
+                                <div class="fw-semibold">{{ employee.full_name }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small">Giới tính</label>
+                                <div class="fw-semibold">{{ employee.get_gender_display }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small">Ngày sinh</label>
+                                <div class="fw-semibold">{{ employee.dob|date:"d/m/Y"|default:"—" }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small">CCCD/CMND</label>
+                                <div class="fw-semibold">{{ employee.id_number|default:"—" }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small">Số điện thoại</label>
+                                <div class="fw-semibold">{{ employee.phone|default:"—" }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small">Email</label>
+                                <div class="fw-semibold">{{ employee.email|default:"—" }}</div>
+                            </div>
+                            <div class="col-12">
+                                <label class="text-muted small">Địa chỉ</label>
+                                <div class="fw-semibold">{{ employee.address|default:"—" }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small">Liên hệ khẩn cấp</label>
+                                <div class="fw-semibold">{{ employee.emergency_contact_name|default:"—" }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small">SĐT khẩn cấp</label>
+                                <div class="fw-semibold">{{ employee.emergency_contact_phone|default:"—" }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Work Tab -->
+                    <div class="tab-pane fade" id="work">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="text-muted small">Mã nhân viên</label>
+                                <div class="fw-semibold">{{ employee.employee_id }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small">Phòng ban</label>
+                                <div class="fw-semibold">{{ employee.department.name|default:"—" }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small">Chức vụ</label>
+                                <div class="fw-semibold">{{ employee.position.name|default:"—" }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small">Ngày vào làm</label>
+                                <div class="fw-semibold">{{ employee.hire_date|date:"d/m/Y"|default:"—" }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small">Loại hình làm việc</label>
+                                <div class="fw-semibold">{{ employee.get_employment_type_display }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small">Trạng thái</label>
+                                <div>
+                                    {% if employee.status == 'active' %}
+                                        <span class="badge bg-success">Đang làm việc</span>
+                                    {% elif employee.status == 'inactive' %}
+                                        <span class="badge bg-warning">Tạm nghỉ</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Đã nghỉ việc</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Tab -->
+                    <div class="tab-pane fade" id="bank">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="text-muted small">Số tài khoản</label>
+                                <div class="fw-semibold">{{ employee.bank_account|default:"—" }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small">Ngân hàng</label>
+                                <div class="fw-semibold">{{ employee.bank_name|default:"—" }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contracts Tab -->
+                    <div class="tab-pane fade" id="contracts">
+                        <div class="d-flex justify-content-end mb-3">
+                            <a href="{% url 'employees:contract_create' employee.pk %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus me-1"></i>Thêm hợp đồng
+                            </a>
+                        </div>
+                        {% if contracts %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Loại HĐ</th>
+                                        <th>Ngày bắt đầu</th>
+                                        <th>Ngày kết thúc</th>
+                                        <th>Lương</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for contract in contracts %}
+                                    <tr>
+                                        <td>{{ contract.get_contract_type_display }}</td>
+                                        <td>{{ contract.start_date|date:"d/m/Y" }}</td>
+                                        <td>{{ contract.end_date|date:"d/m/Y"|default:"Không thời hạn" }}</td>
+                                        <td>{{ contract.salary|floatformat:0 }} VNĐ</td>
+                                        <td>
+                                            {% if contract.status == 'active' %}
+                                                <span class="badge bg-success">Hiệu lực</span>
+                                            {% elif contract.status == 'expired' %}
+                                                <span class="badge bg-warning">Hết hạn</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Chấm dứt</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-file-contract mb-2" style="font-size:2rem"></i>
+                            <p>Chưa có hợp đồng nào</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Chức vụ{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'employees:employee_list' %}">Nhân viên</a></li>
+<li class="breadcrumb-item active">Chức vụ</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-sitemap me-2 text-primary"></i>Chức vụ</h4>
+    <a href="{% url 'employees:position_create' %}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Thêm chức vụ</a>
+</div>
+<div class="card mb-3">
+    <div class="card-body py-3">
+        <form method="get" class="d-flex gap-2 flex-wrap">
+            <div class="input-group" style="max-width:280px">
+                <span class="input-group-text"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Tìm chức vụ...">
+            </div>
+            <select name="department" class="form-select" style="max-width:200px">
+                <option value="">Tất cả phòng ban</option>
+                {% for dept in departments %}
+                <option value="{{ dept.id }}" {% if selected_dept == dept.id|stringformat:"s" %}selected{% endif %}>{{ dept.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Lọc</button>
+        </form>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Tên chức vụ</th>
+                    <th>Mã</th>
+                    <th>Phòng ban</th>
+                    <th>Cấp độ</th>
+                    <th>Hệ số lương</th>
+                    <th class="text-center">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pos in positions %}
+                <tr>
+                    <td class="fw-semibold">{{ pos.name }}</td>
+                    <td><span class="badge bg-secondary">{{ pos.code }}</span></td>
+                    <td>{{ pos.department.name }}</td>
+                    <td><span class="badge bg-info-subtle text-info">{{ pos.get_level_display }}</span></td>
+                    <td>{{ pos.salary_grade|default:"—" }}</td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'employees:position_edit' pos.pk %}" class="btn btn-outline-warning"><i class="fas fa-pen"></i></a>
+                            <a href="{% url 'employees:position_delete' pos.pk %}" class="btn btn-outline-danger"><i class="fas fa-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">Chưa có chức vụ nào</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

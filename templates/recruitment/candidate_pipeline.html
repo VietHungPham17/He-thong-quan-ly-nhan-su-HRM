@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Pipeline Ứng viên{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'recruitment:job_posting_list' %}">Tuyển dụng</a></li>
+<li class="breadcrumb-item active">Pipeline ứng viên</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.kanban-board { min-height: 500px; }
+.kanban-col-header .badge { font-size:12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-columns me-2 text-primary"></i>Pipeline tuyển dụng</h4>
+    <div class="d-flex gap-2">
+        <a href="{% url 'recruitment:candidate_list' %}" class="btn btn-outline-primary"><i class="fas fa-list me-1"></i>Danh sách</a>
+        <a href="{% url 'recruitment:candidate_create' %}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Thêm ứng viên</a>
+    </div>
+</div>
+
+<!-- Filter by job -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="d-flex gap-2">
+            <select name="job" class="form-select" style="max-width:280px">
+                <option value="">Tất cả vị trí</option>
+                {% for job in job_postings %}
+                <option value="{{ job.id }}" {% if selected_job == job.id|stringformat:"s" %}selected{% endif %}>{{ job.title }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Lọc</button>
+        </form>
+    </div>
+</div>
+
+<!-- Kanban Board -->
+<div class="kanban-board pb-4">
+    {% for stage, candidates in pipeline.items %}
+    <div class="kanban-col">
+        <div class="kanban-col-header">
+            <span>{{ status_labels|dictsort:stage|first|last }}</span>
+            {% with count=candidates|length %}
+            <span class="badge bg-secondary">{{ count }}</span>
+            {% endwith %}
+        </div>
+        {% for c in candidates %}
+        <a href="{% url 'recruitment:candidate_edit' c.pk %}" class="text-decoration-none">
+            <div class="kanban-card">
+                <div class="fw-semibold text-dark mb-1">{{ c.full_name }}</div>
+                <div class="text-muted" style="font-size:12px">{{ c.applied_position.title }}</div>
+                <div class="mt-2 d-flex justify-content-between align-items-center">
+                    <span class="text-muted" style="font-size:11px">{{ c.applied_at|date:"d/m" }}</span>
+                    <span class="badge bg-info-subtle text-info" style="font-size:10px">{{ c.get_source_display }}</span>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <div class="text-center text-muted py-3" style="font-size:12px">Trống</div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+// Build status labels from context
+const statusLabels = {
+    'new': 'Mới',
+    'screening': 'Sàng lọc',
+    'interview': 'Phỏng vấn',
+    'offer': 'Đề nghị',
+    'hired': 'Đã tuyển',
+    'rejected': 'Từ chối'
+};
+// Update kanban column headers
+document.querySelectorAll('.kanban-col').forEach(function(col, i) {
+    const header = col.querySelector('.kanban-col-header span:first-child');
+    const stage = Object.keys(statusLabels)[i];
+    if (stage) header.textContent = statusLabels[stage];
+});
+</script>
+{% endblock %}

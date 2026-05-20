@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Xóa chức vụ{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="mb-3" style="font-size:3rem;color:#dc3545"><i class="fas fa-triangle-exclamation"></i></div>
+                <h5>Xác nhận xóa chức vụ</h5>
+                <p class="text-muted">Xóa chức vụ <strong>{{ object.name }}</strong>?</p>
+                <form method="post" class="d-flex justify-content-center gap-3">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash me-1"></i>Xóa</button>
+                    <a href="{% url 'employees:position_list' %}" class="btn btn-outline-secondary">Hủy</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

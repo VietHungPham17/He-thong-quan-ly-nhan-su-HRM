@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Bảng chấm công{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Chấm công</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-calendar-check me-2 text-primary"></i>Bảng chấm công</h4>
+    <a href="{% url 'attendance:attendance_create' %}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Thêm bản ghi</a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label mb-1">Tháng</label>
+                <select name="month" class="form-select">
+                    {% for m in months %}
+                    <option value="{{ m }}" {% if month == m %}selected{% endif %}>Tháng {{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label mb-1">Năm</label>
+                <select name="year" class="form-select">
+                    {% for y in years %}
+                    <option value="{{ y }}" {% if year == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label mb-1">Phòng ban</label>
+                <select name="department" class="form-select">
+                    <option value="">Tất cả phòng ban</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if selected_dept == dept.id|stringformat:"s" %}selected{% endif %}>{{ dept.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label mb-1">Nhân viên</label>
+                <select name="employee" class="form-select">
+                    <option value="">Tất cả</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.id }}" {% if selected_emp == emp.id|stringformat:"s" %}selected{% endif %}>{{ emp.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter me-1"></i>Lọc</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Nhân viên</th>
+                        <th>Phòng ban</th>
+                        <th>Ngày</th>
+                        <th>Giờ vào</th>
+                        <th>Giờ ra</th>
+                        <th>Số giờ</th>
+                        <th>Trạng thái</th>
+                        <th>Ghi chú</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">{{ record.employee.full_name }}</div>
+                            <div class="text-muted small">{{ record.employee.employee_id }}</div>
+                        </td>
+                        <td>{{ record.employee.department.name|default:"—" }}</td>
+                        <td>{{ record.date|date:"d/m/Y" }}</td>
+                        <td>{{ record.check_in|default:"—" }}</td>
+                        <td>{{ record.check_out|default:"—" }}</td>
+                        <td>{{ record.work_hours }}h</td>
+                        <td>
+                            {% if record.status == 'present' %}<span class="badge bg-success">Có mặt</span>
+                            {% elif record.status == 'absent' %}<span class="badge bg-danger">Vắng mặt</span>
+                            {% elif record.status == 'late' %}<span class="badge bg-warning">Đi muộn</span>
+                            {% elif record.status == 'half_day' %}<span class="badge bg-info">Nửa ngày</span>
+                            {% else %}<span class="badge bg-secondary">Nghỉ phép</span>{% endif %}
+                        </td>
+                        <td class="text-muted small">{{ record.note|truncatechars:30|default:"—" }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'attendance:attendance_edit' record.pk %}" class="btn btn-sm btn-outline-warning"><i class="fas fa-pen"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="9" class="text-center text-muted py-5">
+                        <i class="fas fa-calendar-xmark mb-2" style="font-size:2rem"></i>
+                        <p class="mb-0">Không có dữ liệu chấm công</p>
+                    </td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="card-footer bg-transparent">
+        <nav><ul class="pagination pagination-sm mb-0 justify-content-center">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&month={{ month }}&year={{ year }}"><i class="fas fa-chevron-left"></i></a></li>{% endif %}
+            {% for num in page_obj.paginator.page_range %}{% if page_obj.number == num %}<li class="page-item active"><span class="page-link">{{ num }}</span></li>{% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}<li class="page-item"><a class="page-link" href="?page={{ num }}&month={{ month }}&year={{ year }}">{{ num }}</a></li>{% endif %}{% endfor %}
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&month={{ month }}&year={{ year }}"><i class="fas fa-chevron-right"></i></a></li>{% endif %}
+        </ul></nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

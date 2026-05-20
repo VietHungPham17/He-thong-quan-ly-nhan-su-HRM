@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Ca làm việc{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Ca làm việc</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-clock me-2 text-primary"></i>Ca làm việc</h4>
+    <a href="{% url 'attendance:work_schedule_create' %}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Thêm ca</a>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <thead>
+                <tr><th>Tên ca</th><th>Ngày làm việc</th><th>Giờ bắt đầu</th><th>Giờ kết thúc</th><th>Nghỉ giữa ca</th></tr>
+            </thead>
+            <tbody>
+                {% for s in schedules %}
+                <tr>
+                    <td class="fw-semibold">{{ s.name }}</td>
+                    <td>{{ s.work_days_display }}</td>
+                    <td>{{ s.start_time }}</td>
+                    <td>{{ s.end_time }}</td>
+                    <td>{{ s.break_duration_minutes }} phút</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted py-4">Chưa có ca làm việc</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

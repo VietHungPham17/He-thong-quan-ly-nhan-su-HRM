@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Đăng nhập{% endblock %}
+
+{% block auth_content %}
+<div class="login-page">
+    <!-- Decorative circles -->
+    <div style="position:absolute;top:10%;left:5%;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,0.03);pointer-events:none;"></div>
+    <div style="position:absolute;bottom:10%;right:5%;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.04);pointer-events:none;"></div>
+
+    <div class="login-card">
+        <!-- Logo -->
+        <div class="login-logo">
+            <i class="fas fa-users-gear"></i>
+        </div>
+
+        <h4 class="text-center fw-bold mb-1">Chào mừng trở lại!</h4>
+        <p class="text-center text-muted mb-4" style="font-size:14px">
+            Đăng nhập vào Hệ thống Quản lý Nhân sự
+        </p>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label fw-medium">
+                    <i class="fas fa-user me-1 text-muted"></i>Tên đăng nhập
+                </label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-medium">
+                    <i class="fas fa-lock me-1 text-muted"></i>Mật khẩu
+                </label>
+                <div class="position-relative">
+                    {{ form.password }}
+                    <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y pe-3 text-muted"
+                            onclick="togglePassword(this)" tabindex="-1">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                {% if form.password.errors %}
+                <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                {% endif %}
+                {% if form.non_field_errors %}
+                <div class="text-danger small mt-1">{{ form.non_field_errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                <i class="fas fa-right-to-bracket me-2"></i>Đăng nhập
+            </button>
+        </form>
+
+        <div class="mt-4 pt-3 border-top text-center">
+            <small class="text-muted">
+                <i class="fas fa-shield-halved me-1"></i>
+                Hệ thống quản lý nhân sự nội bộ
+            </small>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword(btn) {
+    const input = btn.closest('.position-relative').querySelector('input');
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+</script>
+{% endblock %}

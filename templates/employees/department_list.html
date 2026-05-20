@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Phòng ban{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'employees:employee_list' %}">Nhân viên</a></li>
+<li class="breadcrumb-item active">Phòng ban</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-building me-2 text-primary"></i>Phòng ban</h4>
+    <a href="{% url 'employees:department_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i>Thêm phòng ban
+    </a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body py-3">
+        <form method="get" class="d-flex gap-2">
+            <div class="input-group" style="max-width:320px">
+                <span class="input-group-text"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Tìm tên hoặc mã phòng ban...">
+            </div>
+            <button type="submit" class="btn btn-primary">Tìm</button>
+            <a href="{% url 'employees:department_list' %}" class="btn btn-outline-secondary"><i class="fas fa-rotate-right"></i></a>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Tên phòng ban</th>
+                        <th>Mã</th>
+                        <th>Trưởng phòng</th>
+                        <th>Số NV</th>
+                        <th>Mô tả</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dept in departments %}
+                    <tr>
+                        <td class="fw-semibold">{{ dept.name }}</td>
+                        <td><span class="badge bg-secondary">{{ dept.code }}</span></td>
+                        <td>{{ dept.manager.get_full_name|default:dept.manager.username|default:"—" }}</td>
+                        <td><span class="badge bg-primary-subtle text-primary fw-semibold">{{ dept.emp_count }}</span></td>
+                        <td class="text-muted small">{{ dept.description|truncatechars:50|default:"—" }}</td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'employees:department_edit' dept.pk %}" class="btn btn-outline-warning"><i class="fas fa-pen"></i></a>
+                                <a href="{% url 'employees:department_delete' dept.pk %}" class="btn btn-outline-danger"><i class="fas fa-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">Chưa có phòng ban nào</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="card-footer bg-transparent">
+        <nav><ul class="pagination pagination-sm mb-0 justify-content-center">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}"><i class="fas fa-chevron-left"></i></a></li>{% endif %}
+            {% for num in page_obj.paginator.page_range %}{% if page_obj.number == num %}<li class="page-item active"><span class="page-link">{{ num }}</span></li>{% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}<li class="page-item"><a class="page-link" href="?page={{ num }}&q={{ q }}">{{ num }}</a></li>{% endif %}{% endfor %}
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}"><i class="fas fa-chevron-right"></i></a></li>{% endif %}
+        </ul></nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

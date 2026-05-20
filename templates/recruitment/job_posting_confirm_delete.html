@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Xóa tin tuyển dụng{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="mb-3" style="font-size:3rem;color:#dc3545"><i class="fas fa-triangle-exclamation"></i></div>
+                <h5>Xóa tin tuyển dụng</h5>
+                <p class="text-muted">Xóa tin <strong>{{ object.title }}</strong>? Tất cả ứng viên liên quan cũng sẽ bị xóa.</p>
+                <form method="post" class="d-flex justify-content-center gap-3">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash me-1"></i>Xóa</button>
+                    <a href="{% url 'recruitment:job_posting_list' %}" class="btn btn-outline-secondary">Hủy</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

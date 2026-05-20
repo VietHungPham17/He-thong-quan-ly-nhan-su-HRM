@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}Sửa bảng lương{% else %}Tạo bảng lương{% endif %}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'payroll:payroll_list' %}">Bảng lương</a></li>
+<li class="breadcrumb-item active">{% if object %}Sửa{% else %}Tạo{% endif %}</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-money-bill-wave me-2 text-primary"></i>{% if object %}Cập nhật phiếu lương{% else %}Tạo phiếu lương{% endif %}</h4>
+    <a href="{% url 'payroll:payroll_list' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Quay lại</a>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">{{ form.employee.label }}</label>{{ form.employee }}</div>
+                        <div class="col-md-3"><label class="form-label">{{ form.month.label }}</label>{{ form.month }}</div>
+                        <div class="col-md-3"><label class="form-label">{{ form.year.label }}</label>{{ form.year }}</div>
+                        <div class="col-md-4"><label class="form-label">{{ form.basic_salary.label }}</label>{{ form.basic_salary }}</div>
+                        <div class="col-md-4"><label class="form-label">{{ form.allowances_total.label }}</label>{{ form.allowances_total }}</div>
+                        <div class="col-md-4"><label class="form-label">{{ form.deductions_total.label }}</label>{{ form.deductions_total }}</div>
+                        <div class="col-md-4"><label class="form-label">{{ form.working_days.label }}</label>{{ form.working_days }}</div>
+                        <div class="col-md-4"><label class="form-label">{{ form.actual_working_days.label }}</label>{{ form.actual_working_days }}</div>
+                        <div class="col-md-4"><label class="form-label">{{ form.status.label }}</label>{{ form.status }}</div>
+                        <div class="col-12"><label class="form-label">{{ form.note.label }}</label>{{ form.note }}</div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Lưu phiếu lương</button>
+                        <a href="{% url 'payroll:payroll_list' %}" class="btn btn-outline-secondary">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

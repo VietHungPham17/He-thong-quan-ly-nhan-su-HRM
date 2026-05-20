@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}Sửa chấm công{% else %}Thêm chấm công{% endif %}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'attendance:attendance_list' %}">Chấm công</a></li>
+<li class="breadcrumb-item active">{% if object %}Sửa{% else %}Thêm{% endif %}</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-clock me-2 text-primary"></i>{% if object %}Cập nhật chấm công{% else %}Thêm bản ghi chấm công{% endif %}</h4>
+    <a href="{% url 'attendance:attendance_list' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Quay lại</a>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">{{ form.employee.label }}</label>{{ form.employee }}</div>
+                        <div class="col-md-6"><label class="form-label">{{ form.date.label }}</label>{{ form.date }}</div>
+                        <div class="col-md-4"><label class="form-label">{{ form.check_in.label }}</label>{{ form.check_in }}</div>
+                        <div class="col-md-4"><label class="form-label">{{ form.check_out.label }}</label>{{ form.check_out }}</div>
+                        <div class="col-md-4"><label class="form-label">{{ form.status.label }}</label>{{ form.status }}</div>
+                        <div class="col-12"><label class="form-label">{{ form.note.label }}</label>{{ form.note }}</div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Lưu</button>
+                        <a href="{% url 'attendance:attendance_list' %}" class="btn btn-outline-secondary">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}Sửa ứng viên{% else %}Thêm ứng viên{% endif %}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'recruitment:candidate_list' %}">Ứng viên</a></li>
+<li class="breadcrumb-item active">{% if object %}Sửa{% else %}Thêm{% endif %}</li>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h4><i class="fas fa-user-tie me-2 text-primary"></i>{% if object %}Cập nhật ứng viên{% else %}Thêm ứng viên mới{% endif %}</h4>
+    <a href="{% url 'recruitment:candidate_list' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Quay lại</a>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">{{ form.full_name.label }}</label>{{ form.full_name }}</div>
+                        <div class="col-md-6"><label class="form-label">{{ form.email.label }}</label>{{ form.email }}</div>
+                        <div class="col-md-6"><label class="form-label">{{ form.phone.label }}</label>{{ form.phone }}</div>
+                        <div class="col-md-6"><label class="form-label">{{ form.applied_position.label }}</label>{{ form.applied_position }}</div>
+                        <div class="col-md-4"><label class="form-label">{{ form.status.label }}</label>{{ form.status }}</div>
+                        <div class="col-md-4"><label class="form-label">{{ form.source.label }}</label>{{ form.source }}</div>
+                        <div class="col-md-4"><label class="form-label">{{ form.cv_file.label }}</label>{{ form.cv_file }}</div>
+                        <div class="col-12"><label class="form-label">{{ form.cover_letter.label }}</label>{{ form.cover_letter }}</div>
+                        <div class="col-12"><label class="form-label">{{ form.note.label }}</label>{{ form.note }}</div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Lưu</button>
+                        <a href="{% url 'recruitment:candidate_list' %}" class="btn btn-outline-secondary">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
