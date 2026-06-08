@@ -37,6 +37,12 @@ Chay migrate:
 python manage.py migrate
 ```
 
+Nap du lieu demo neu can:
+
+```bash
+python manage.py seed_data
+```
+
 Tao tai khoan quan tri neu chua co:
 
 ```bash
@@ -63,11 +69,12 @@ Co the dung script co san:
 
 ## Tai khoan demo
 
-Neu database demo da duoc seed san, co the dang nhap bang:
+Sau khi chay `python manage.py seed_data`, co the dang nhap bang:
 
 ```text
-Admin: username=admin / password=admin123
-HR:    username=hr / password=hr123456
+Admin: username=admin_demo / password=123456
+HR:    username=hr_demo / password=123456
+Nhan vien: username=demo001 -> demo050 / password=123456
 ```
 
 ## Kiem tra
