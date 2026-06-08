@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load currency %}
 
 {% block title %}{{ employee.full_name }}{% endblock %}
 
@@ -214,7 +215,7 @@
                                         <td>{{ contract.get_contract_type_display }}</td>
                                         <td>{{ contract.start_date|date:"d/m/Y" }}</td>
                                         <td>{{ contract.end_date|date:"d/m/Y"|default:"Không thời hạn" }}</td>
-                                        <td>{{ contract.salary|floatformat:0 }} VNĐ</td>
+                                        <td>{{ contract.salary|vnd_amount }} VNĐ</td>
                                         <td>
                                             {% if contract.status == 'active' %}
                                                 <span class="badge bg-success">Hiệu lực</span>

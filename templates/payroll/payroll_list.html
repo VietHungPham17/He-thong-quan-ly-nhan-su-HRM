@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load currency %}
 {% block title %}Bảng lương{% endblock %}
 {% block breadcrumb %}
 <li class="breadcrumb-item active">Tiền lương</li>
@@ -71,7 +72,7 @@
                 <div class="stat-icon bg-success-subtle"><i class="fas fa-money-bill text-success"></i></div>
                 <div>
                     <div class="text-muted small">Tổng lương cơ bản</div>
-                    <div class="fw-bold fs-5">{{ total_basic|floatformat:0 }} ₫</div>
+                    <div class="fw-bold fs-5">{{ total_basic|vnd_amount }} ₫</div>
                 </div>
             </div>
         </div>
@@ -82,7 +83,7 @@
                 <div class="stat-icon bg-warning-subtle"><i class="fas fa-money-bill-wave text-warning"></i></div>
                 <div>
                     <div class="text-muted small">Tổng thực lĩnh</div>
-                    <div class="fw-bold fs-5">{{ total_net|floatformat:0 }} ₫</div>
+                    <div class="fw-bold fs-5">{{ total_net|vnd_amount }} ₫</div>
                 </div>
             </div>
         </div>
@@ -115,10 +116,10 @@
                         </td>
                         <td>{{ p.employee.department.name|default:"—" }}</td>
                         <td>{{ p.month }}/{{ p.year }}</td>
-                        <td class="text-end">{{ p.basic_salary|floatformat:0 }}</td>
-                        <td class="text-end text-success">+{{ p.allowances_total|floatformat:0 }}</td>
-                        <td class="text-end text-danger">-{{ p.deductions_total|floatformat:0 }}</td>
-                        <td class="text-end fw-bold">{{ p.net_salary|floatformat:0 }} ₫</td>
+                        <td class="text-end">{{ p.basic_salary|vnd_amount }}</td>
+                        <td class="text-end text-success">+{{ p.allowances_total|vnd_amount }}</td>
+                        <td class="text-end text-danger">-{{ p.deductions_total|vnd_amount }}</td>
+                        <td class="text-end fw-bold">{{ p.net_salary|vnd_amount }} ₫</td>
                         <td>
                             {% if p.status == 'draft' %}<span class="badge bg-secondary">Nháp</span>
                             {% elif p.status == 'approved' %}<span class="badge bg-primary">Đã duyệt</span>

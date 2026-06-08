@@ -16,11 +16,6 @@
                         <div class="col-12">
                             <label class="form-label d-block mb-2">Ngày làm việc</label>
                             <div class="d-flex flex-wrap gap-3">
-                                {% for field_name in "monday,tuesday,wednesday,thursday,friday,saturday,sunday"|split:"," %}
-                                <div class="form-check">{{ form|getattr:field_name }} <label class="form-check-label">{{ form|getattr:field_name|label }}</label></div>
-                                {% endfor %}
-                            </div>
-                            <div class="d-flex flex-wrap gap-3 mt-2">
                                 <div class="form-check">{{ form.monday }}<label class="form-check-label ms-1">{{ form.monday.label }}</label></div>
                                 <div class="form-check">{{ form.tuesday }}<label class="form-check-label ms-1">{{ form.tuesday.label }}</label></div>
                                 <div class="form-check">{{ form.wednesday }}<label class="form-check-label ms-1">{{ form.wednesday.label }}</label></div>

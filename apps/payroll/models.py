@@ -1,4 +1,5 @@
 from django.db import models
+from apps.utils import format_vnd_amount
 from apps.employees.models import Employee
 
 
@@ -113,7 +114,7 @@ class AllowanceItem(models.Model):
         verbose_name_plural = 'Khoản phụ cấp'
 
     def __str__(self):
-        return f'{self.name}: {self.amount:,}'
+        return f'{self.name}: {format_vnd_amount(self.amount)}'
 
 
 class DeductionItem(models.Model):
@@ -134,4 +135,4 @@ class DeductionItem(models.Model):
         verbose_name_plural = 'Khoản khấu trừ'
 
     def __str__(self):
-        return f'{self.name}: {self.amount:,}'
+        return f'{self.name}: {format_vnd_amount(self.amount)}'

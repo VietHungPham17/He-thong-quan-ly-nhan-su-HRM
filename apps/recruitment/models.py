@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from apps.utils import format_vnd_amount
 from apps.employees.models import Department, Position
 
 
@@ -68,7 +69,7 @@ class JobPosting(models.Model):
     @property
     def salary_range(self):
         if self.salary_range_min and self.salary_range_max:
-            return f'{self.salary_range_min:,.0f} - {self.salary_range_max:,.0f} VNĐ'
+            return f'{format_vnd_amount(self.salary_range_min)} - {format_vnd_amount(self.salary_range_max)} VNĐ'
         return 'Thỏa thuận'
 
 
