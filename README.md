@@ -9,7 +9,6 @@ Ung dung quan ly nhan su duoc xay dung bang Django. He thong gom cac module chin
 - Tao va quan ly bang luong, phieu luong, phu cap va khau tru.
 - Quan ly tin tuyen dung, ung vien, pipeline va lich phong van.
 - Phan quyen theo nhom nguoi dung Admin, HR, Manager va Employee.
-- Hien thi tien VND theo dinh dang co dau tach hang nghin, vi du `900.000.000`.
 
 ## Yeu cau
 
