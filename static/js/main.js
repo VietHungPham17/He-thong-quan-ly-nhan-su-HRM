@@ -1,22 +1,77 @@
-/* HRM System - Main JavaScript */
+/* HRM System - Main JavaScript (Responsive) */
 
 document.addEventListener('DOMContentLoaded', function () {
 
     // ── Sidebar Toggle ─────────────────────────────────
     const sidebarToggle = document.getElementById('sidebarToggle');
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
+    const sidebar       = document.getElementById('sidebar');
+    const mainContent   = document.getElementById('mainContent');
+    const overlay       = document.getElementById('sidebarOverlay');
+
+    const MOBILE_BP = 768;
+
+    function isMobile() {
+        return window.innerWidth <= MOBILE_BP;
+    }
+
+    function openMobileSidebar() {
+        sidebar.classList.add('mobile-open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileSidebar() {
+        sidebar.classList.remove('mobile-open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function toggleDesktopSidebar() {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('collapsed');
+        // Persist state
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        try { localStorage.setItem('sidebarCollapsed', isCollapsed); } catch(e) {}
+    }
+
+    // Restore desktop sidebar state
+    if (!isMobile()) {
+        try {
+            const saved = localStorage.getItem('sidebarCollapsed');
+            if (saved === 'true' && sidebar && mainContent) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('collapsed');
+            }
+        } catch(e) {}
+    }
 
     if (sidebarToggle && sidebar && mainContent) {
         sidebarToggle.addEventListener('click', function () {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('mobile-open');
+            if (isMobile()) {
+                if (sidebar.classList.contains('mobile-open')) {
+                    closeMobileSidebar();
+                } else {
+                    openMobileSidebar();
+                }
             } else {
-                sidebar.classList.toggle('collapsed');
-                mainContent.classList.toggle('collapsed');
+                toggleDesktopSidebar();
             }
         });
     }
+
+    // Overlay click closes sidebar
+    if (overlay) {
+        overlay.addEventListener('click', function () {
+            closeMobileSidebar();
+        });
+    }
+
+    // Handle resize: clean up mobile state when going to desktop
+    window.addEventListener('resize', function () {
+        if (!isMobile()) {
+            closeMobileSidebar();
+        }
+    });
 
     // ── Auto-dismiss alerts ─────────────────────────────
     const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
@@ -34,14 +89,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 e.preventDefault();
             }
         });
-    });
-
-    // ── Active sidebar link ─────────────────────────────
-    const currentPath = window.location.pathname;
-    document.querySelectorAll('.sidebar-nav .nav-link').forEach(function (link) {
-        if (link.href && link.href !== '#' && currentPath.startsWith(new URL(link.href, window.location.origin).pathname)) {
-            link.classList.add('active');
-        }
     });
 
     // ── Tooltip initialization ──────────────────────────
@@ -71,15 +118,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
     }
 
-    // ── Mobile overlay ──────────────────────────────────
-    document.addEventListener('click', function (e) {
-        if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('mobile-open')) {
-            if (!sidebar.contains(e.target) && e.target !== sidebarToggle) {
-                sidebar.classList.remove('mobile-open');
-            }
-        }
-    });
-
     // ── Search with delay ──────────────────────────────
     const searchInputs = document.querySelectorAll('.search-input');
     searchInputs.forEach(function (input) {
@@ -91,5 +129,29 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 500);
         });
     });
+
+    // ── Touch swipe to open/close sidebar on mobile ────
+    let touchStartX = 0;
+    let touchEndX   = 0;
+    const SWIPE_THRESHOLD = 60;
+
+    document.addEventListener('touchstart', function (e) {
+        touchStartX = e.changedTouches[0].clientX;
+    }, { passive: true });
+
+    document.addEventListener('touchend', function (e) {
+        if (!isMobile()) return;
+        touchEndX = e.changedTouches[0].clientX;
+        const diff = touchEndX - touchStartX;
+
+        // Swipe right from left edge → open sidebar
+        if (diff > SWIPE_THRESHOLD && touchStartX < 30) {
+            openMobileSidebar();
+        }
+        // Swipe left when sidebar is open → close
+        if (diff < -SWIPE_THRESHOLD && sidebar && sidebar.classList.contains('mobile-open')) {
+            closeMobileSidebar();
+        }
+    }, { passive: true });
 
 });
