@@ -106,4 +106,3 @@ Repository khong commit cac file du lieu va cau hinh local nhu:
 - `db.sqlite3`
 - `media/`
 - `.env`
-
