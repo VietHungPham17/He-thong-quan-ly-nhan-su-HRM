@@ -179,72 +179,73 @@ class Command(BaseCommand):
                 }
             )
 
-        last_names = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Đỗ", "Vũ", "Bùi", "Đặng", "Đinh"]
-        middle_names = ["Văn", "Thị", "Minh", "Quang", "Hữu", "Thanh", "Gia", "Tuấn", "Khánh", "Hoài"]
-        first_names = ["An", "Bình", "Chi", "Dũng", "Hà", "Hải", "Hưng", "Linh", "Nam", "Phương", "Quân", "Trang"]
+        # ── 3 tài khoản Manager cố định ────────────────────────────────────────
+        managers_data = [
+            # (username, first_name, last_name, phone, dept_code)
+            ("manager_it",   "Khoa",  "Nguyễn Văn",  "0912100001", "IT"),
+            ("manager_sale", "Hùng",  "Trần Quốc",   "0912100002", "SALE"),
+            ("manager_hr",   "Lan",   "Phạm Thị",   "0912100003", "HR"),
+        ]
+        managers = []
+        dept_map = {d.code: d for d in departments}
+        pos_map  = {p.department.code: p for p in positions if p.level == "manager"}
 
-        employees = []
-
-        for i in range(1, 51):
-            full_name = f"{random.choice(last_names)} {random.choice(middle_names)} {random.choice(first_names)}"
-            username = f"demo{i:03d}"
-            email = f"demo{i:03d}@hrm.com"
-
-            user, _ = User.objects.update_or_create(
+        for username, first, last, phone, dept_code in managers_data:
+            full_name = f"{last} {first}"
+            u, _ = User.objects.update_or_create(
                 username=username,
                 defaults={
-                    "email": email,
-                    "first_name": full_name.split()[-1],
-                    "last_name": " ".join(full_name.split()[:-1]),
-                    "role": random.choice(["employee", "employee", "employee", "manager"]),
-                    "phone": f"09{random.randint(10000000, 99999999)}",
+                    "email": f"{username}@hrm.com",
+                    "first_name": first,
+                    "last_name": last,
+                    "role": "manager",
+                    "phone": phone,
                 }
             )
-            user.set_password("123456")
-            user.save()
+            u.set_password("123456")
+            u.save()
 
-            position = random.choice(positions)
-            department = position.department
+            dept = dept_map.get(dept_code)
+            pos  = pos_map.get(dept_code)
+            hire = date(2021, random.randint(1, 12), random.randint(1, 28))
 
-            employee, _ = Employee.objects.update_or_create(
-                user=user,
+            emp, _ = Employee.objects.update_or_create(
+                user=u,
                 defaults={
                     "full_name": full_name,
                     "gender": random.choice(["male", "female"]),
-                    "dob": date(random.randint(1985, 2002), random.randint(1, 12), random.randint(1, 28)),
-                    "phone": user.phone,
-                    "email": email,
+                    "dob": date(random.randint(1980, 1990), random.randint(1, 12), random.randint(1, 28)),
+                    "phone": phone,
+                    "email": f"{username}@hrm.com",
                     "address": f"Số {random.randint(1, 200)}, Hà Nội",
                     "id_number": f"0{random.randint(10000000000, 99999999999)}",
-                    "department": department,
-                    "position": position,
-                    "hire_date": date(random.randint(2020, 2025), random.randint(1, 12), random.randint(1, 28)),
-                    "employment_type": random.choice(["full_time", "full_time", "contract", "part_time"]),
-                    "status": random.choice(["active", "active", "active", "inactive"]),
+                    "department": dept,
+                    "position": pos,
+                    "hire_date": hire,
+                    "employment_type": "full_time",
+                    "status": "active",
                     "emergency_contact_name": "Người thân",
                     "emergency_contact_phone": f"09{random.randint(10000000, 99999999)}",
                     "bank_account": f"{random.randint(1000000000, 9999999999)}",
-                    "bank_name": random.choice(["Vietcombank", "Techcombank", "BIDV", "MB Bank", "ACB"]),
+                    "bank_name": random.choice(["Vietcombank", "Techcombank", "BIDV"]),
                 }
             )
-            employees.append(employee)
-
-            salary = random.choice([
-                8000000, 10000000, 12000000, 15000000,
-                18000000, 20000000, 25000000, 30000000
-            ])
+            managers.append(emp)
 
             Contract.objects.update_or_create(
-                employee=employee,
+                employee=emp,
                 defaults={
-                    "contract_type": random.choice(["fixed_term", "indefinite", "probation"]),
-                    "start_date": employee.hire_date or date(2024, 1, 1),
+                    "contract_type": "indefinite",
+                    "start_date": hire,
                     "end_date": None,
-                    "salary": Decimal(salary),
-                    "signed_date": employee.hire_date or date(2024, 1, 1),
+                    "salary": Decimal(random.choice([20000000, 25000000, 30000000])),
+                    "signed_date": hire,
                     "status": "active",
                 }
             )
+
+        employees = managers
+        self.stdout.write(self.style.SUCCESS(f"✓ Tạo 3 tài khoản Manager."))
 
         today = date.today()
         current_year = today.year
@@ -364,6 +365,10 @@ class Command(BaseCommand):
             )
             job_postings.append(job)
 
+        last_names = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Đỗ", "Vũ", "Bùi", "Đặng", "Đinh"]
+        middle_names = ["Văn", "Thị", "Minh", "Quang", "Hữu", "Thanh", "Gia", "Tuấn", "Khánh", "Hoài"]
+        first_names = ["An", "Bình", "Chi", "Dũng", "Hà", "Hải", "Hưng", "Linh", "Nam", "Phương", "Quân", "Trang"]
+
         for i in range(1, 31):
             full_name = f"{random.choice(last_names)} {random.choice(middle_names)} {random.choice(first_names)}"
             email = f"candidate{i:03d}@gmail.com"
@@ -418,9 +423,11 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"  {username:<22} {role:<12} 123456   [{full}]"))
 
         self.stdout.write("")
-        # Tài khoản demo
-        self.stdout.write("  --- Nhân viên demo (demo001 → demo050) ---")
-        self.stdout.write(self.style.SUCCESS("  demo001 → demo050         employee   123456"))
+        # Tài khoản Manager
+        self.stdout.write("  --- Manager ---")
+        for username, first, last, phone, dept in managers_data:
+            full = f"{last} {first}"
+            self.stdout.write(self.style.SUCCESS(f"  {username:<22} {'manager':<12} 123456   [{full} - {dept}]"))
 
         self.stdout.write(self.style.HTTP_INFO("=" * 62))
         self.stdout.write("")
