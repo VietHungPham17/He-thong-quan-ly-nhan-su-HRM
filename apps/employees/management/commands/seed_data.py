@@ -47,6 +47,41 @@ class Command(BaseCommand):
         hr.set_password("123456")
         hr.save()
 
+        self.stdout.write(self.style.SUCCESS("✓ Tạo tài khoản admin và HR demo."))
+
+        # ── Các tài khoản nhân viên có tên thực ──────────────────────
+        named_employees = [
+            # (username, first_name, last_name, phone, role)
+            ("nguyen.van.a", "An",    "Nguyễn Văn",  "0912345001", "employee"),
+            ("tran.thi.b",   "Bình",  "Trần Thị",   "0912345002", "employee"),
+            ("le.van.c",     "Cường", "Lê Văn",     "0912345003", "employee"),
+            ("pham.thi.d",   "Dung",  "Phạm Thị",   "0912345004", "employee"),
+            ("hoang.van.e",  "Em",    "Hoàng Văn",  "0912345005", "employee"),
+            ("vu.thi.f",     "Fư",    "Vũ Thị",     "0912345006", "employee"),
+            ("do.van.g",     "Gia",   "Đỗ Văn",     "0912345007", "manager"),
+            ("bui.thi.h",    "Hoa",   "Bùi Thị",    "0912345008", "employee"),
+            ("dang.van.i",   "Ích",   "Đặng Văn",   "0912345009", "employee"),
+            ("dinh.thi.j",   "Jade",  "Đinh Thị",   "0912345010", "hr"),
+        ]
+        named_users = []
+        for username, first, last, phone, role in named_employees:
+            u, _ = User.objects.update_or_create(
+                username=username,
+                defaults={
+                    "email": f"{username}@hrm.com",
+                    "first_name": first,
+                    "last_name": last,
+                    "role": role,
+                    "is_staff": role in ("admin", "hr"),
+                    "phone": phone,
+                }
+            )
+            u.set_password("123456")
+            u.save()
+            named_users.append((username, first, last, role))
+
+        self.stdout.write(self.style.SUCCESS(f"✓ Tạo {len(named_employees)} tài khoản nhân viên có tên thực."))
+
         departments_data = [
             ("Nhân sự", "HR"),
             ("Công nghệ thông tin", "IT"),
@@ -362,6 +397,30 @@ class Command(BaseCommand):
                 )
 
         self.stdout.write(self.style.SUCCESS("Tạo dữ liệu demo thành công!"))
-        self.stdout.write(self.style.SUCCESS("Tài khoản admin_demo / 123456"))
-        self.stdout.write(self.style.SUCCESS("Tài khoản hr_demo / 123456"))
-        self.stdout.write(self.style.SUCCESS("Tài khoản nhân viên demo001 -> demo050 / 123456"))
+
+        # ── In bảng tài khoản / mật khẩu ──────────────────────────────
+        self.stdout.write("")
+        self.stdout.write(self.style.HTTP_INFO("=" * 62))
+        self.stdout.write(self.style.HTTP_INFO("   DANH SÁCH TÀI KHOẢN MẪU  (mật khẩu: 123456)   "))
+        self.stdout.write(self.style.HTTP_INFO("=" * 62))
+        self.stdout.write(self.style.WARNING(f"  {'Tài khoản':<22} {'Vai trò':<12} {'Mật khẩu'}"))
+        self.stdout.write(self.style.WARNING("-" * 62))
+
+        # Tài khoản đặc biệt
+        for uname, role in [("admin_demo", "admin"), ("hr_demo", "hr")]:
+            self.stdout.write(self.style.SUCCESS(f"  {uname:<22} {role:<12} 123456"))
+
+        self.stdout.write("")
+        # Tài khoản tên thực
+        self.stdout.write("  --- Nhân viên tên thực ---")
+        for username, first, last, role in named_users:
+            full = f"{last} {first}"
+            self.stdout.write(self.style.SUCCESS(f"  {username:<22} {role:<12} 123456   [{full}]"))
+
+        self.stdout.write("")
+        # Tài khoản demo
+        self.stdout.write("  --- Nhân viên demo (demo001 → demo050) ---")
+        self.stdout.write(self.style.SUCCESS("  demo001 → demo050         employee   123456"))
+
+        self.stdout.write(self.style.HTTP_INFO("=" * 62))
+        self.stdout.write("")

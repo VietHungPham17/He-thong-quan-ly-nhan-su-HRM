@@ -403,7 +403,6 @@ body {
     gap: 16px;
     overflow-x: auto;
     padding-bottom: 16px;
-    -webkit-overflow-scrolling: touch;
 }
 
 .kanban-col {
@@ -493,6 +492,8 @@ body {
 .text-truncate-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
+    /* stylelint-disable-next-line */
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
