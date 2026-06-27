@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.db.models import Q, Count
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import (
     TemplateView, ListView, DetailView,
@@ -294,6 +295,3 @@ class ContractCreateView(HRRequiredMixin, CreateView):
     def get_success_url(self):
         return reverse_lazy('employees:employee_detail', kwargs={'pk': self.kwargs['employee_pk']})
 
-
-# fix missing import
-from django.shortcuts import redirect

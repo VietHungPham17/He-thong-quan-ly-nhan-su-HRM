@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.db.models import Q, Sum
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, FormView
 from django.utils import timezone
@@ -140,5 +141,3 @@ class GeneratePayrollView(HRRequiredMixin, FormView):
         )
         return super().form_valid(form)
 
-
-from django.shortcuts import redirect
