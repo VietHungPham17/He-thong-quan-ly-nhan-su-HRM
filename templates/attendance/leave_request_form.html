@@ -22,6 +22,7 @@
                         <div class="col-12">
                             <label class="form-label">{{ form.leave_type.label }}</label>
                             {{ form.leave_type }}
+                            {% if form.leave_type.errors %}<div class="text-danger small mt-1">{{ form.leave_type.errors }}</div>{% endif %}
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">{{ form.start_date.label }}</label>
@@ -39,11 +40,13 @@
                                 {{ form.days_count }}
                                 <span class="input-group-text text-muted">ngày</span>
                             </div>
+                            {% if form.days_count.errors %}<div class="text-danger small mt-1">{{ form.days_count.errors }}</div>{% endif %}
                             <div class="form-text">Tự động tính từ ngày bắt đầu đến kết thúc.</div>
                         </div>
                         <div class="col-12">
                             <label class="form-label">{{ form.reason.label }}</label>
                             {{ form.reason }}
+                            {% if form.reason.errors %}<div class="text-danger small mt-1">{{ form.reason.errors }}</div>{% endif %}
                         </div>
                     </div>
                     <div class="mt-4 d-flex gap-2">

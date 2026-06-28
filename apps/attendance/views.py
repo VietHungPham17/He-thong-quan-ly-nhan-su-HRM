@@ -80,16 +80,32 @@ class LeaveRequestListView(LoginRequiredMixin, ListView):
         qs = LeaveRequest.objects.select_related(
             'employee', 'employee__department', 'leave_type', 'approved_by'
         )
-        # Employee chỉ thấy đơn của chính mình
-        if not self.request.user.can_manage:
-            try:
-                qs = qs.filter(employee=self.request.user.employee_profile)
-            except Exception:
-                return qs.none()
-        else:
+        user = self.request.user
+
+        # Phân quyền hiển thị đơn nghỉ phép
+        if user.role in ('admin', 'hr'):
+            # Admin và HR được xem toàn bộ hệ thống
             dept = self.request.GET.get('department', '')
             if dept:
                 qs = qs.filter(employee__department_id=dept)
+        elif user.role == 'manager':
+            # Manager chỉ được xem đơn của bản thân và nhân viên trong phòng ban của họ
+            try:
+                emp_profile = user.employee_profile
+                dept = emp_profile.department
+                if dept:
+                    from django.db.models import Q
+                    qs = qs.filter(Q(employee=emp_profile) | Q(employee__department=dept))
+                else:
+                    qs = qs.filter(employee=emp_profile)
+            except Exception:
+                qs = qs.none()
+        else:
+            # Nhân viên thường (role='employee') chỉ xem được đơn của chính mình
+            try:
+                qs = qs.filter(employee=user.employee_profile)
+            except Exception:
+                qs = qs.none()
 
         status = self.request.GET.get('status', '')
         if status:
@@ -146,6 +162,29 @@ def approve_leave(request, pk):
             leave.approved_by = request.user
             leave.save()
             messages.warning(request, 'Đã từ chối đơn nghỉ phép.')
+    return redirect('attendance:leave_request_list')
+
+
+def cancel_leave(request, pk):
+    if not request.user.is_authenticated:
+        return redirect('accounts:login')
+    
+    leave = get_object_or_404(LeaveRequest, pk=pk)
+    
+    # Chỉ chủ sở hữu đơn mới có quyền huỷ đơn của mình
+    if not hasattr(request.user, 'employee_profile') or leave.employee != request.user.employee_profile:
+        messages.error(request, 'Bạn không có quyền huỷ đơn này.')
+        return redirect('attendance:leave_request_list')
+        
+    # Chỉ được huỷ đơn khi ở trạng thái chờ duyệt (pending)
+    if leave.status != 'pending':
+        messages.error(request, 'Chỉ có thể huỷ đơn nghỉ phép ở trạng thái chờ duyệt.')
+        return redirect('attendance:leave_request_list')
+        
+    if request.method == 'POST':
+        leave.delete()
+        messages.success(request, 'Đã huỷ đơn nghỉ phép thành công.')
+        
     return redirect('attendance:leave_request_list')
 
 

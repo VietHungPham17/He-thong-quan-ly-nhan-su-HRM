@@ -74,6 +74,10 @@ class LeaveRequestForm(forms.ModelForm):
             'reason': 'Lý do',
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['days_count'].required = False
+
     def clean_start_date(self):
         start_date = self.cleaned_data.get('start_date')
         if start_date:

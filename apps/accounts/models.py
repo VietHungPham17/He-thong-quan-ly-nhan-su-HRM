@@ -10,7 +10,7 @@ class User(AbstractUser):
 
     ROLE_CHOICES = [
         (ROLE_ADMIN, 'Quản trị viên'),
-        (ROLE_HR, 'Nhân sự'),
+        (ROLE_HR, 'HR'),
         (ROLE_MANAGER, 'Quản lý'),
         (ROLE_EMPLOYEE, 'Nhân viên'),
     ]

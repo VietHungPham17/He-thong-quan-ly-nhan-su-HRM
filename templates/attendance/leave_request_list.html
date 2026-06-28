@@ -18,12 +18,14 @@
                 <option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
             </select>
+            {% if request.user.role == 'admin' or request.user.role == 'hr' %}
             <select name="department" class="form-select" style="max-width:200px">
                 <option value="">Tất cả phòng ban</option>
                 {% for dept in departments %}
                 <option value="{{ dept.id }}" {% if selected_dept == dept.id|stringformat:"s" %}selected{% endif %}>{{ dept.name }}</option>
                 {% endfor %}
             </select>
+            {% endif %}
             <button type="submit" class="btn btn-primary">Lọc</button>
         </form>
     </div>
@@ -63,18 +65,37 @@
                             {% else %}<span class="badge bg-danger">Từ chối</span>{% endif %}
                         </td>
                         <td class="text-center">
-                            {% if leave.status == 'pending' %}
-                            <form method="post" action="{% url 'attendance:leave_approve' leave.pk %}" class="d-inline">
-                                {% csrf_token %}
-                                <button name="action" value="approve" class="btn btn-sm btn-success" title="Duyệt">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button name="action" value="reject" class="btn btn-sm btn-danger" title="Từ chối">
-                                    <i class="fas fa-xmark"></i>
-                                </button>
-                            </form>
+                            {% if leave.employee == request.user.employee_profile %}
+                                {# Đơn của chính mình #}
+                                {% if leave.status == 'pending' %}
+                                <form method="post" action="{% url 'attendance:leave_cancel' leave.pk %}" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn huỷ đơn nghỉ phép này không?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Huỷ đơn">
+                                        <i class="fas fa-trash-alt me-1"></i>Huỷ đơn
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-muted small">{{ leave.approved_by.get_full_name|default:"—" }}</span>
+                                {% endif %}
                             {% else %}
-                            <span class="text-muted small">{{ leave.approved_by.get_full_name|default:"—" }}</span>
+                                {# Đơn của người khác #}
+                                {% if request.user.can_manage %}
+                                    {% if leave.status == 'pending' %}
+                                    <form method="post" action="{% url 'attendance:leave_approve' leave.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button name="action" value="approve" class="btn btn-sm btn-success" title="Duyệt">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button name="action" value="reject" class="btn btn-sm btn-danger" title="Từ chối">
+                                            <i class="fas fa-xmark"></i>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span class="text-muted small">{{ leave.approved_by.get_full_name|default:"—" }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted small">—</span>
+                                {% endif %}
                             {% endif %}
                         </td>
                     </tr>
