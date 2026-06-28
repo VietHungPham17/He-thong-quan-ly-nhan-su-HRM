@@ -79,7 +79,7 @@ class DepartmentListView(ManagerRequiredMixin, ListView):
     def get_queryset(self):
         qs = Department.objects.annotate(
             emp_count=Count('employees', filter=Q(employees__status='active'))
-        ).select_related('manager')
+        ).select_related('manager').order_by('name')
         q = self.request.GET.get('q', '')
         if q:
             qs = qs.filter(Q(name__icontains=q) | Q(code__icontains=q))

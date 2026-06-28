@@ -13,19 +13,72 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-body">
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-circle-exclamation me-2"></i>
+                    <strong>Có lỗi xảy ra, vui lòng kiểm tra lại:</strong>
+                    <ul class="mb-0 mt-1">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
                 <form method="post">
                     {% csrf_token %}
                     <div class="row g-3">
-                        <div class="col-md-6"><label class="form-label">{{ form.employee.label }}</label>{{ form.employee }}</div>
-                        <div class="col-md-3"><label class="form-label">{{ form.month.label }}</label>{{ form.month }}</div>
-                        <div class="col-md-3"><label class="form-label">{{ form.year.label }}</label>{{ form.year }}</div>
-                        <div class="col-md-4"><label class="form-label">{{ form.basic_salary.label }}</label>{{ form.basic_salary }}</div>
-                        <div class="col-md-4"><label class="form-label">{{ form.allowances_total.label }}</label>{{ form.allowances_total }}</div>
-                        <div class="col-md-4"><label class="form-label">{{ form.deductions_total.label }}</label>{{ form.deductions_total }}</div>
-                        <div class="col-md-4"><label class="form-label">{{ form.working_days.label }}</label>{{ form.working_days }}</div>
-                        <div class="col-md-4"><label class="form-label">{{ form.actual_working_days.label }}</label>{{ form.actual_working_days }}</div>
-                        <div class="col-md-4"><label class="form-label">{{ form.status.label }}</label>{{ form.status }}</div>
-                        <div class="col-12"><label class="form-label">{{ form.note.label }}</label>{{ form.note }}</div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.employee.label }}</label>
+                            {{ form.employee }}
+                            {% if form.employee.errors %}<div class="text-danger small mt-1">{{ form.employee.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">{{ form.month.label }}</label>
+                            {{ form.month }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">{{ form.year.label }}</label>
+                            {{ form.year }}
+                            {% if form.year.errors %}<div class="text-danger small mt-1">{{ form.year.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.basic_salary.label }}</label>
+                            {{ form.basic_salary }}
+                            {% if form.basic_salary.errors %}<div class="text-danger small mt-1">{{ form.basic_salary.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.allowances_total.label }}</label>
+                            {{ form.allowances_total }}
+                            {% if form.allowances_total.errors %}<div class="text-danger small mt-1">{{ form.allowances_total.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.deductions_total.label }}</label>
+                            {{ form.deductions_total }}
+                            {% if form.deductions_total.errors %}<div class="text-danger small mt-1">{{ form.deductions_total.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.working_days.label }}</label>
+                            {{ form.working_days }}
+                            {% if form.working_days.errors %}<div class="text-danger small mt-1">{{ form.working_days.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.actual_working_days.label }}</label>
+                            {{ form.actual_working_days }}
+                            {% if form.actual_working_days.errors %}<div class="text-danger small mt-1">{{ form.actual_working_days.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.status.label }}</label>
+                            {{ form.status }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{{ form.note.label }}</label>
+                            {{ form.note }}
+                        </div>
                     </div>
                     <div class="mt-4 d-flex gap-2">
                         <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Lưu phiếu lương</button>

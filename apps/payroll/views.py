@@ -8,7 +8,7 @@ from django.utils import timezone
 from .models import Payroll, AllowanceItem, DeductionItem
 from .forms import PayrollForm, GeneratePayrollForm
 from apps.employees.models import Employee
-from apps.accounts.mixins import HRRequiredMixin
+from apps.accounts.mixins import HRRequiredMixin, ManagerRequiredMixin
 
 
 class PayrollListView(HRRequiredMixin, ListView):
@@ -56,7 +56,8 @@ class PayrollDetailView(LoginRequiredMixin, DetailView):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
         # Employee chỉ được xem phiếu lương của chính mình
-        if not request.user.can_manage:
+        # Manager, HR, Admin được xem tất cả
+        if request.user.role == 'employee':
             payroll = self.get_object()
             try:
                 if payroll.employee != request.user.employee_profile:
@@ -84,7 +85,7 @@ class PayrollCreateView(HRRequiredMixin, CreateView):
         payroll.net_salary = payroll.basic_salary + payroll.allowances_total - payroll.deductions_total
         payroll.save()
         messages.success(self.request, 'Tạo bảng lương thành công!')
-        return super().form_valid(form)
+        return redirect(self.success_url)
 
 
 class PayrollUpdateView(HRRequiredMixin, UpdateView):
@@ -100,7 +101,7 @@ class PayrollUpdateView(HRRequiredMixin, UpdateView):
         payroll.net_salary = payroll.basic_salary + payroll.allowances_total - payroll.deductions_total
         payroll.save()
         messages.success(self.request, 'Cập nhật bảng lương thành công!')
-        return super().form_valid(form)
+        return redirect(self.get_success_url())
 
 
 class GeneratePayrollView(HRRequiredMixin, FormView):
@@ -141,3 +142,30 @@ class GeneratePayrollView(HRRequiredMixin, FormView):
         )
         return super().form_valid(form)
 
+
+class MyPayslipListView(LoginRequiredMixin, ListView):
+    """Cho phép mọi người dùng xem danh sách phiếu lương của chính mình."""
+    model = Payroll
+    template_name = 'payroll/my_payslips.html'
+    context_object_name = 'payrolls'
+    paginate_by = 12
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        try:
+            self._employee = request.user.employee_profile
+        except Exception:
+            messages.error(request, 'Bạn chưa có hồ sơ nhân viên. Vui lòng liên hệ phòng Nhân sự.')
+            return redirect('employees:dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return Payroll.objects.filter(
+            employee=self._employee
+        ).select_related('employee').order_by('-year', '-month')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['employee'] = self._employee
+        return ctx

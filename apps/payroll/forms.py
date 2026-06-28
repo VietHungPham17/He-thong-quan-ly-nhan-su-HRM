@@ -76,8 +76,8 @@ class PayrollForm(forms.ModelForm):
     def clean_working_days(self):
         days = self.cleaned_data.get('working_days')
         if days is not None:
-            if days < 1:
-                raise ValidationError('Ngày công chuẩn phải ít nhất là 1 ngày.')
+            if days < 0:
+                raise ValidationError('Ngày công chuẩn không được âm.')
             if days > 31:
                 raise ValidationError('Ngày công chuẩn không được vượt quá 31 ngày.')
         return days

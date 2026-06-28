@@ -18,7 +18,7 @@ class JobPostingListView(ManagerRequiredMixin, ListView):
     def get_queryset(self):
         qs = JobPosting.objects.select_related(
             'department', 'position', 'created_by'
-        ).annotate(cand_count=Count('candidates'))
+        ).annotate(cand_count=Count('candidates')).order_by('-created_at')
         status = self.request.GET.get('status', '')
         q = self.request.GET.get('q', '')
         if status:
