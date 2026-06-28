@@ -49,6 +49,16 @@ class JobPostingForm(forms.ModelForm):
             'deadline': 'Hạn nộp',
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Đảm bảo dropdown luôn hiển thị tất cả phòng ban và chức vụ
+        from apps.employees.models import Department, Position
+        self.fields['department'].queryset = Department.objects.all().order_by('name')
+        self.fields['department'].empty_label = '--- Chọn phòng ban ---'
+        self.fields['position'].queryset = Position.objects.all().select_related('department').order_by('department__name', 'name')
+        self.fields['position'].empty_label = '--- Chọn chức vụ (nếu có) ---'
+
+
     def clean_title(self):
         title = self.cleaned_data.get('title', '').strip()
         if not title:

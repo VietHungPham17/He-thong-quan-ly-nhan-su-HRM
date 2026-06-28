@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.db.models import Q, Count
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from .models import JobPosting, Candidate, Interview
@@ -170,3 +171,38 @@ class InterviewCreateView(ManagerRequiredMixin, CreateView):
     def form_valid(self, form):
         messages.success(self.request, 'Lên lịch phỏng vấn thành công!')
         return super().form_valid(form)
+
+
+class InterviewUpdateView(ManagerRequiredMixin, UpdateView):
+    """Cập nhật / Hủy lịch phỏng vấn."""
+    model = Interview
+    form_class = InterviewForm
+    template_name = 'recruitment/interview_form.html'
+    success_url = reverse_lazy('recruitment:interview_list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['is_edit'] = True
+        return ctx
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Cập nhật lịch phỏng vấn thành công!')
+        return super().form_valid(form)
+
+
+class InterviewCancelView(ManagerRequiredMixin, UpdateView):
+    """Hủy nhanh lịch phỏng vấn — chỉ đổi status = cancelled."""
+    model = Interview
+    fields = []  # không hiện form, xử lý qua POST
+    template_name = 'recruitment/interview_confirm_cancel.html'
+    success_url = reverse_lazy('recruitment:interview_list')
+
+    def post(self, request, *args, **kwargs):
+        interview = self.get_object()
+        if interview.status == 'completed':
+            messages.error(request, 'Không thể hủy lịch phỏng vấn đã hoàn thành.')
+            return redirect('recruitment:interview_list')
+        interview.status = 'cancelled'
+        interview.save()
+        messages.warning(request, f'Lịch phỏng vấn của {interview.candidate.full_name} đã bị hủy.')
+        return redirect(self.success_url)

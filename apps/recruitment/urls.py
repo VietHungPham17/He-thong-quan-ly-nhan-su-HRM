@@ -16,4 +16,6 @@ urlpatterns = [
 
     path('interviews/', views.InterviewListView.as_view(), name='interview_list'),
     path('interviews/create/', views.InterviewCreateView.as_view(), name='interview_create'),
+    path('interviews/<int:pk>/edit/', views.InterviewUpdateView.as_view(), name='interview_edit'),
+    path('interviews/<int:pk>/cancel/', views.InterviewCancelView.as_view(), name='interview_cancel'),
 ]

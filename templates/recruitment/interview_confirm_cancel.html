@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Hủy lịch phỏng vấn{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="mb-3" style="font-size:3rem;color:#f59e0b"><i class="fas fa-calendar-xmark"></i></div>
+                <h5>Hủy lịch phỏng vấn</h5>
+                <p class="text-muted">
+                    Hủy lịch phỏng vấn <strong>{{ object.get_interview_type_display }}</strong> với ứng viên
+                    <strong>{{ object.candidate.full_name }}</strong> vào lúc
+                    <strong>{{ object.scheduled_at|date:"d/m/Y H:i" }}</strong>?
+                </p>
+                {% if object.status == 'completed' %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-ban me-1"></i> Không thể hủy lịch phỏng vấn đã hoàn thành.
+                </div>
+                <a href="{% url 'recruitment:interview_list' %}" class="btn btn-secondary">Quay lại</a>
+                {% else %}
+                <form method="post" class="d-flex justify-content-center gap-3">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning"><i class="fas fa-calendar-xmark me-1"></i>Xác nhận hủy</button>
+                    <a href="{% url 'recruitment:interview_list' %}" class="btn btn-outline-secondary">Không hủy</a>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

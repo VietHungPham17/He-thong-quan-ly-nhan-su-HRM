@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q, Count
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -11,6 +12,25 @@ from django.utils import timezone
 from .models import Department, Position, Employee, Contract
 from .forms import DepartmentForm, PositionForm, EmployeeForm, ContractForm
 from apps.accounts.mixins import HRRequiredMixin, ManagerRequiredMixin
+from apps.accounts.models import User
+import unicodedata
+import re
+
+
+def _to_ascii_username(full_name: str) -> str:
+    """Chuyển họ tên tiếng Việt có dấu sang username ASCII không dấu, chỉ giaoồm chữ thường và số.
+
+    Ví dụ: 'Nguyễn Văn Ań' -> 'nguyenvanan'
+    """
+    # Chuẩn hoá NFD để tách base-char khỏi combining marks
+    normalized = unicodedata.normalize('NFD', full_name)
+    # Giữ lại chỉ các ký tự không phải combining (dấu)
+    ascii_str = ''.join(c for c in normalized if unicodedata.category(c) != 'Mn')
+    # Chứa 'Dd' đặc biệt tiếng Việt (đ/Đ -> d/D)
+    ascii_str = ascii_str.replace('đ', 'd').replace('Đ', 'D')
+    # Chỉ giữ chữ và số, bỏ khoảng trắng và ký tự đặc biệt
+    ascii_str = re.sub(r'[^a-zA-Z0-9]', '', ascii_str)
+    return ascii_str.lower()
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -239,8 +259,34 @@ class EmployeeCreateView(HRRequiredMixin, CreateView):
         return ctx
 
     def form_valid(self, form):
-        messages.success(self.request, 'Thêm nhân viên thành công!')
-        return super().form_valid(form)
+        employee = form.save(commit=False)
+        # Tạo tài khoản User tự động
+        full_name = employee.full_name.strip()
+        parts = full_name.split()
+        # Sinh username không dấu từ họ tên
+        base_username = _to_ascii_username(full_name)
+        if not base_username:
+            base_username = 'nhanvien'
+        username = base_username
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f'{base_username}{counter}'
+            counter += 1
+        with transaction.atomic():
+            user = User.objects.create_user(
+                username=username,
+                password='123456',
+                first_name=parts[-1] if len(parts) > 1 else full_name,
+                last_name=' '.join(parts[:-1]) if len(parts) > 1 else '',
+                role='employee',
+            )
+            employee.user = user
+            employee.save()
+        messages.success(
+            self.request,
+            f'Thêm nhân viên thành công! Tài khoản: <strong>{username}</strong> / Mật khẩu: <strong>123456</strong>. Yêu cầu nhân viên đổi mật khẩu sau khi đăng nhập.'
+        )
+        return redirect(self.success_url)
 
 
 class EmployeeUpdateView(HRRequiredMixin, UpdateView):

@@ -71,9 +71,10 @@ Co the dung script co san:
 Sau khi chay `python manage.py seed_data`, co the dang nhap bang:
 
 ```text
-Admin: username=admin_demo / password=123456
-HR:    username=hr_demo / password=123456
-Nhan vien: username=demo001 -> demo050 / password=123456
+Admin:     username=admin_demo / password=123456
+HR:        username=hr_demo / password=123456
+Manager:   username=manager_it, manager_sale, manager_hr / password=123456
+Nhan vien: username=nguyen.van.a, tran.thi.b, le.van.c... / password=123456
 ```
 
 ## Kiem tra

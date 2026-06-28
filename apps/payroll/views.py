@@ -115,7 +115,7 @@ class GeneratePayrollView(HRRequiredMixin, FormView):
     def form_valid(self, form):
         month = int(form.cleaned_data['month'])
         year = int(form.cleaned_data['year'])
-        employees = Employee.objects.filter(status='active').select_related('contracts')
+        employees = Employee.objects.filter(status='active').prefetch_related('contracts')
         created = 0
         skipped = 0
         for emp in employees:

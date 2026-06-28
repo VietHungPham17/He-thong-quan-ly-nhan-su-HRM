@@ -111,13 +111,20 @@ class LeaveRequestCreateView(LoginRequiredMixin, CreateView):
     template_name = 'attendance/leave_request_form.html'
     success_url = reverse_lazy('attendance:leave_request_list')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        # Kiểm tra user có hồ sơ nhân viên không
+        if not hasattr(request.user, 'employee_profile'):
+            messages.error(request, 'Tài khoản của bạn chưa được liên kết với hồ sơ nhân viên. Vui lòng liên hệ HR.')
+            return redirect('attendance:leave_request_list')
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
-        try:
-            form.instance.employee = self.request.user.employee_profile
-        except Exception:
-            pass
+        form.instance.employee = self.request.user.employee_profile
         messages.success(self.request, 'Gửi đơn nghỉ phép thành công!')
         return super().form_valid(form)
+
 
 
 def approve_leave(request, pk):
