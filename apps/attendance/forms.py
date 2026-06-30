@@ -175,3 +175,40 @@ class WorkScheduleForm(forms.ModelForm):
             raise ValidationError('Ca làm việc phải có ít nhất một ngày làm việc được chọn.')
 
         return cleaned_data
+
+
+# ─── GenerateAttendanceForm ───────────────────────────────────────────────────
+
+class GenerateAttendanceForm(forms.Form):
+    date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        label='Ngày chấm công',
+        initial=date.today,
+    )
+    default_status = forms.ChoiceField(
+        choices=[
+            ('present', 'Có mặt'),
+            ('absent',  'Vắng mặt'),
+        ],
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label='Trạng thái mặc định',
+        initial='present',
+    )
+    default_check_in = forms.TimeField(
+        widget=forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+        label='Giờ vào mặc định',
+        initial='08:00',
+        required=False,
+    )
+    default_check_out = forms.TimeField(
+        widget=forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+        label='Giờ ra mặc định',
+        initial='17:00',
+        required=False,
+    )
+
+    def clean_date(self):
+        d = self.cleaned_data.get('date')
+        if d and d > date.today():
+            raise ValidationError('Không thể tạo chấm công cho ngày trong tương lai.')
+        return d

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Đăng xuất{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center">
+            <div class="card-body py-5">
+                <div class="mb-3" style="font-size:3rem;color:#6c757d">
+                    <i class="fas fa-right-from-bracket"></i>
+                </div>
+                <h5 class="mb-2">Bạn muốn đăng xuất?</h5>
+                <p class="text-muted mb-4">Phiên làm việc của bạn sẽ kết thúc.</p>
+                <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger px-4 me-2">
+                        <i class="fas fa-right-from-bracket me-1"></i>Đăng xuất
+                    </button>
+                    <a href="{% url 'employees:dashboard' %}" class="btn btn-outline-secondary px-4">
+                        Huỷ
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

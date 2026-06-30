@@ -157,9 +157,28 @@ class InterviewListView(ManagerRequiredMixin, ListView):
     paginate_by = 15
 
     def get_queryset(self):
-        return Interview.objects.select_related(
+        qs = Interview.objects.select_related(
             'candidate', 'candidate__applied_position', 'interviewer'
         )
+        status = self.request.GET.get('status', '')
+        interview_type = self.request.GET.get('type', '')
+        q = self.request.GET.get('q', '')
+        if status:
+            qs = qs.filter(status=status)
+        if interview_type:
+            qs = qs.filter(interview_type=interview_type)
+        if q:
+            qs = qs.filter(candidate__full_name__icontains=q)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['status_choices'] = Interview.STATUS_CHOICES
+        ctx['type_choices'] = Interview.TYPE_CHOICES
+        ctx['selected_status'] = self.request.GET.get('status', '')
+        ctx['selected_type'] = self.request.GET.get('type', '')
+        ctx['q'] = self.request.GET.get('q', '')
+        return ctx
 
 
 class InterviewCreateView(ManagerRequiredMixin, CreateView):

@@ -66,7 +66,22 @@ class DepartmentForm(forms.ModelForm):
 
 # ─── PositionForm ──────────────────────────────────────────────────────────────
 
+SALARY_GRADE_CHOICES = [
+    ('', '--- Chọn hệ số lương ---'),
+    ('1', '1'),
+    ('2', '2'),
+    ('3', '3'),
+]
+
+
 class PositionForm(forms.ModelForm):
+    salary_grade = forms.ChoiceField(
+        choices=SALARY_GRADE_CHOICES,
+        required=False,
+        label='Hệ số lương',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+
     class Meta:
         model = Position
         fields = ['name', 'code', 'department', 'level', 'salary_grade']
@@ -75,14 +90,12 @@ class PositionForm(forms.ModelForm):
             'code': forms.TextInput(attrs={'class': 'form-control'}),
             'department': forms.Select(attrs={'class': 'form-select'}),
             'level': forms.Select(attrs={'class': 'form-select'}),
-            'salary_grade': forms.TextInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'name': 'Tên chức vụ',
             'code': 'Mã chức vụ',
             'department': 'Phòng ban',
             'level': 'Cấp độ',
-            'salary_grade': 'Hệ số lương',
         }
 
     def clean_code(self):
@@ -102,13 +115,8 @@ class PositionForm(forms.ModelForm):
 
     def clean_salary_grade(self):
         grade = self.cleaned_data.get('salary_grade', '').strip()
-        if grade:
-            try:
-                val = float(grade)
-                if val <= 0:
-                    raise ValidationError('Hệ số lương phải là số dương (> 0).')
-            except ValueError:
-                raise ValidationError('Hệ số lương phải là một con số hợp lệ (vd: 1.5, 2.0).')
+        if grade and grade not in ('1', '2', '3'):
+            raise ValidationError('Hệ số lương chỉ được chọn 1, 2 hoặc 3.')
         return grade
 
 

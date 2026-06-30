@@ -6,6 +6,7 @@ app_name = 'attendance'
 urlpatterns = [
     path('', views.AttendanceListView.as_view(), name='attendance_list'),
     path('create/', views.AttendanceCreateView.as_view(), name='attendance_create'),
+    path('generate/', views.GenerateAttendanceView.as_view(), name='generate_attendance'),
     path('<int:pk>/edit/', views.AttendanceUpdateView.as_view(), name='attendance_edit'),
 
     path('leave-requests/', views.LeaveRequestListView.as_view(), name='leave_request_list'),

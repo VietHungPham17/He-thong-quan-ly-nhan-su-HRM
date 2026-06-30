@@ -120,7 +120,7 @@ class Command(BaseCommand):
                         "name": f"{name} {dept.name}",
                         "department": dept,
                         "level": level,
-                        "salary_grade": f"B{idx}",
+                        "salary_grade": str(min(idx, 3)),
                     }
                 )
                 positions.append(pos)
@@ -246,6 +246,102 @@ class Command(BaseCommand):
 
         employees = managers
         self.stdout.write(self.style.SUCCESS(f"✓ Tạo 3 tài khoản Manager."))
+
+        # ── 20 nhân viên demo cố định ──────────────────────────────────────────
+        demo_employees_data = [
+            # (username, first_name, last_name, gender, phone, dept_code, level, salary, contract_type, year_start)
+            ("nv.minh.tuan",    "Tuấn",   "Nguyễn Minh",  "male",   "0901111001", "IT",    "junior",  10000000, "probation",  2025),
+            ("nv.thu.huong",    "Hương",  "Trần Thị Thu", "female", "0901111002", "IT",    "middle",  15000000, "fixed_term", 2024),
+            ("nv.duc.anh",      "Anh",    "Lê Đức",       "male",   "0901111003", "IT",    "senior",  20000000, "indefinite", 2022),
+            ("nv.bao.chau",     "Châu",   "Phạm Thị Bảo", "female", "0901111004", "IT",    "lead",    22000000, "indefinite", 2021),
+            ("nv.quoc.hung",    "Hùng",   "Vũ Quốc",      "male",   "0901111005", "SALE",  "junior",  9000000,  "probation",  2025),
+            ("nv.lan.anh",      "Anh",    "Bùi Thị Lan",  "female", "0901111006", "SALE",  "middle",  13000000, "fixed_term", 2024),
+            ("nv.manh.cuong",   "Cường",  "Đỗ Mạnh",      "male",   "0901111007", "SALE",  "senior",  18000000, "indefinite", 2023),
+            ("nv.kim.oanh",     "Oanh",   "Hoàng Thị Kim","female", "0901111008", "SALE",  "middle",  14000000, "fixed_term", 2023),
+            ("nv.thi.mai",      "Mai",    "Đinh Thị",     "female", "0901111009", "HR",    "junior",  9500000,  "fixed_term", 2025),
+            ("nv.van.thanh",    "Thành",  "Đặng Văn",     "male",   "0901111010", "HR",    "middle",  13500000, "indefinite", 2023),
+            ("nv.ngoc.linh",    "Linh",   "Trần Ngọc",    "female", "0901111011", "ACC",   "junior",  10000000, "probation",  2025),
+            ("nv.duc.trung",    "Trung",  "Nguyễn Đức",   "male",   "0901111012", "ACC",   "middle",  14000000, "indefinite", 2023),
+            ("nv.phuong.thao",  "Thảo",   "Lê Phương",    "female", "0901111013", "ACC",   "senior",  19000000, "indefinite", 2022),
+            ("nv.hong.son",     "Sơn",    "Phạm Hồng",    "male",   "0901111014", "ACC",   "lead",    21000000, "indefinite", 2021),
+            ("nv.thanh.hoa",    "Hoa",    "Vũ Thị Thanh", "female", "0901111015", "MKT",   "junior",  9000000,  "probation",  2025),
+            ("nv.quang.minh",   "Minh",   "Bùi Quang",    "male",   "0901111016", "MKT",   "middle",  13000000, "fixed_term", 2024),
+            ("nv.thu.trang",    "Trang",  "Đỗ Thị Thu",   "female", "0901111017", "MKT",   "senior",  17000000, "indefinite", 2023),
+            ("nv.hoai.nam",     "Nam",    "Hoàng Hoài",   "male",   "0901111018", "ADMIN", "junior",  9500000,  "fixed_term", 2024),
+            ("nv.bich.ngoc",    "Ngọc",   "Đinh Thị Bích","female", "0901111019", "ADMIN", "middle",  12000000, "indefinite", 2023),
+            ("nv.tuan.kiet",    "Kiệt",   "Đặng Tuấn",    "male",   "0901111020", "ADMIN", "senior",  16000000, "indefinite", 2022),
+        ]
+
+        level_pos_map = {}
+        for pos in positions:
+            key = (pos.department.code, pos.level)
+            level_pos_map[key] = pos
+
+        demo_emps = []
+        demo_emps_info = []
+        for (username, first, last, gender, phone, dept_code, level, salary,
+             contract_type, year_start) in demo_employees_data:
+            full_name = f"{last} {first}"
+            u, _ = User.objects.update_or_create(
+                username=username,
+                defaults={
+                    "email": f"{username}@hrm.com",
+                    "first_name": first,
+                    "last_name": last,
+                    "role": "employee",
+                    "phone": phone,
+                },
+            )
+            u.set_password("123456")
+            u.save()
+
+            dept = dept_map.get(dept_code)
+            pos  = level_pos_map.get((dept_code, level))
+            hire = date(year_start, random.randint(1, 12), random.randint(1, 20))
+
+            emp, _ = Employee.objects.update_or_create(
+                user=u,
+                defaults={
+                    "full_name": full_name,
+                    "gender": gender,
+                    "dob": date(random.randint(1985, 2000), random.randint(1, 12), random.randint(1, 20)),
+                    "phone": phone,
+                    "email": f"{username}@hrm.com",
+                    "address": f"Số {random.randint(1, 300)}, {random.choice(['Hà Nội', 'TP.HCM', 'Đà Nẵng', 'Hải Phòng'])}",
+                    "id_number": f"0{random.randint(10000000000, 99999999999)}",
+                    "department": dept,
+                    "position": pos,
+                    "hire_date": hire,
+                    "employment_type": "full_time" if contract_type != "part_time" else "part_time",
+                    "status": "active",
+                    "emergency_contact_name": random.choice(["Bố", "Mẹ", "Vợ", "Chồng", "Anh", "Chị"]),
+                    "emergency_contact_phone": f"09{random.randint(10000000, 99999999)}",
+                    "bank_account": f"{random.randint(1000000000, 9999999999)}",
+                    "bank_name": random.choice(["Vietcombank", "Techcombank", "BIDV", "MB Bank", "VPBank"]),
+                },
+            )
+            demo_emps.append(emp)
+            demo_emps_info.append((username, first, last))
+
+            end_date = None
+            if contract_type in ("probation", "fixed_term"):
+                end_date = date(hire.year + 1, hire.month, min(hire.day, 28))
+
+            Contract.objects.update_or_create(
+                employee=emp,
+                defaults={
+                    "contract_type": contract_type,
+                    "start_date": hire,
+                    "end_date": end_date,
+                    "salary": Decimal(salary),
+                    "signed_date": hire,
+                    "status": "active",
+                },
+            )
+
+        employees = employees + demo_emps
+        self.stdout.write(self.style.SUCCESS(f"✓ Tạo {len(demo_emps)} nhân viên demo."))
+
 
         today = date.today()
         current_year = today.year
@@ -428,6 +524,13 @@ class Command(BaseCommand):
         for username, first, last, phone, dept in managers_data:
             full = f"{last} {first}"
             self.stdout.write(self.style.SUCCESS(f"  {username:<22} {'manager':<12} 123456   [{full} - {dept}]"))
+
+        self.stdout.write("")
+        # Tài khoản nhân viên demo
+        self.stdout.write("  --- Nhân viên demo (20 người) ---")
+        for username, first, last in demo_emps_info:
+            full = f"{last} {first}"
+            self.stdout.write(self.style.SUCCESS(f"  {username:<22} {'employee':<12} 123456   [{full}]"))
 
         self.stdout.write(self.style.HTTP_INFO("=" * 62))
         self.stdout.write("")

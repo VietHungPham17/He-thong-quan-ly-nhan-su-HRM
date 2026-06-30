@@ -33,10 +33,16 @@ class LoginView(FormView):
 
 
 class LogoutView(LoginRequiredMixin, TemplateView):
-    def get(self, request, *args, **kwargs):
+    template_name = 'accounts/logout_confirm.html'
+
+    def post(self, request, *args, **kwargs):
         logout(request)
         messages.info(request, 'Bạn đã đăng xuất thành công.')
         return redirect('accounts:login')
+
+    def get(self, request, *args, **kwargs):
+        # Hiển thị trang xác nhận đăng xuất (fallback an toàn)
+        return super().get(request, *args, **kwargs)
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):

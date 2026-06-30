@@ -9,6 +9,24 @@
     <h4><i class="fas fa-file-invoice-dollar me-2 text-primary"></i>Phiếu lương của tôi</h4>
 </div>
 
+{% if no_profile %}
+<!-- Tài khoản chưa liên kết hồ sơ nhân viên -->
+<div class="card">
+    <div class="card-body text-center py-5">
+        <div class="mb-3" style="font-size:3rem;color:#6c757d">
+            <i class="fas fa-id-card-clip"></i>
+        </div>
+        <h5 class="mb-2">Tài khoản chưa có hồ sơ nhân viên</h5>
+        <p class="text-muted mb-0">
+            Tài khoản <strong>{{ request.user.get_role_display }}</strong> này chưa được liên kết với hồ sơ nhân viên
+            nên không có phiếu lương.<br>
+            Nếu bạn cần xem phiếu lương, hãy nhờ Admin tạo hồ sơ nhân viên và liên kết với tài khoản này.
+        </p>
+    </div>
+</div>
+
+{% else %}
+<!-- Thông tin nhân viên -->
 <div class="card mb-4">
     <div class="card-body d-flex align-items-center gap-3">
         <div class="avatar-placeholder avatar-lg">{{ employee.full_name|first|upper }}</div>
@@ -73,4 +91,5 @@
     </div>
     {% endif %}
 </div>
+{% endif %}
 {% endblock %}

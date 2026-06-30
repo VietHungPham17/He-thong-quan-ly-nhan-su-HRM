@@ -2,11 +2,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.db.models import Q
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, UpdateView
+from django.views.generic import ListView, CreateView, UpdateView, FormView
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect
 from .models import AttendanceRecord, LeaveRequest, LeaveType, WorkSchedule
-from .forms import AttendanceRecordForm, LeaveRequestForm, WorkScheduleForm
+from .forms import AttendanceRecordForm, LeaveRequestForm, WorkScheduleForm, GenerateAttendanceForm
 from apps.employees.models import Employee, Department
 from apps.accounts.mixins import HRRequiredMixin, ManagerRequiredMixin
 
@@ -138,6 +138,28 @@ class LeaveRequestCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.employee = self.request.user.employee_profile
+        employee = form.instance.employee
+        leave_type = form.cleaned_data.get('leave_type')
+        days_count = form.cleaned_data.get('days_count') or 0
+        year = form.cleaned_data.get('start_date').year if form.cleaned_data.get('start_date') else None
+
+        # Kiểm tra số dư nghỉ phép
+        if leave_type and year:
+            from .models import LeaveBalance
+            try:
+                balance = LeaveBalance.objects.get(
+                    employee=employee, leave_type=leave_type, year=year
+                )
+                if days_count > balance.remaining_days:
+                    form.add_error(
+                        None,
+                        f'Số ngày nghỉ ({days_count}) vượt quá số dư còn lại '
+                        f'({balance.remaining_days} ngày) của loại "{leave_type.name}".'
+                    )
+                    return self.form_invalid(form)
+            except LeaveBalance.DoesNotExist:
+                pass  # Chưa có bản ghi số dư — cho phép gửi đơn
+
         messages.success(self.request, 'Gửi đơn nghỉ phép thành công!')
         return super().form_valid(form)
 
@@ -155,11 +177,13 @@ def approve_leave(request, pk):
         if action == 'approve':
             leave.status = 'approved'
             leave.approved_by = request.user
+            leave.approved_at = timezone.now()
             leave.save()
             messages.success(request, 'Đã duyệt đơn nghỉ phép.')
         elif action == 'reject':
             leave.status = 'rejected'
             leave.approved_by = request.user
+            leave.approved_at = timezone.now()
             leave.save()
             messages.warning(request, 'Đã từ chối đơn nghỉ phép.')
     return redirect('attendance:leave_request_list')
@@ -202,4 +226,63 @@ class WorkScheduleCreateView(HRRequiredMixin, CreateView):
 
     def form_valid(self, form):
         messages.success(self.request, 'Tạo ca làm việc thành công!')
+        return super().form_valid(form)
+
+
+class GenerateAttendanceView(ManagerRequiredMixin, FormView):
+    """Tạo chấm công hàng loạt cho toàn bộ nhân viên active trong 1 ngày."""
+    template_name = 'attendance/generate_attendance.html'
+    form_class = GenerateAttendanceForm
+    success_url = reverse_lazy('attendance:attendance_list')
+
+    def get_initial(self):
+        from datetime import date
+        return {
+            'date': date.today(),
+            'default_check_in': '08:00',
+            'default_check_out': '17:00',
+            'default_status': 'present',
+        }
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['employee_count'] = Employee.objects.filter(status='active').count()
+        return ctx
+
+    def form_valid(self, form):
+        target_date   = form.cleaned_data['date']
+        status        = form.cleaned_data['default_status']
+        check_in      = form.cleaned_data.get('default_check_in')
+        check_out     = form.cleaned_data.get('default_check_out')
+
+        # Nếu trạng thái là vắng thì không điền giờ
+        if status == 'absent':
+            check_in = None
+            check_out = None
+
+        employees = Employee.objects.filter(status='active')
+        created = skipped = 0
+
+        for emp in employees:
+            _, new = AttendanceRecord.objects.get_or_create(
+                employee=emp,
+                date=target_date,
+                defaults={
+                    'check_in': check_in,
+                    'check_out': check_out,
+                    'status': status,
+                    'note': 'Tạo hàng loạt',
+                },
+            )
+            if new:
+                created += 1
+            else:
+                skipped += 1
+
+        messages.success(
+            self.request,
+            f'Đã tạo {created} bản ghi chấm công ngày {target_date.strftime("%d/%m/%Y")}. '
+            f'Bỏ qua {skipped} (đã tồn tại). '
+            f'Vào bảng chấm công để chỉnh sửa những nhân viên vắng/muộn.'
+        )
         return super().form_valid(form)

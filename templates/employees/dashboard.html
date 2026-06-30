@@ -156,6 +156,7 @@
     </div>
 </div>
 
+{% if user.can_manage %}
 <!-- Quick Actions -->
 <div class="row g-3 mt-1">
     <div class="col-12">
@@ -194,4 +195,36 @@
         </a>
     </div>
 </div>
+{% else %}
+<!-- Quick Actions cho nhân viên thường -->
+<div class="row g-3 mt-1">
+    <div class="col-12">
+        <h6 class="section-title">Thao tác nhanh</h6>
+    </div>
+    <div class="col-6 col-md-4">
+        <a href="{% url 'attendance:leave_request_create' %}" class="card text-decoration-none h-100">
+            <div class="card-body text-center py-3">
+                <div class="mb-2" style="font-size:24px;color:#f59e0b"><i class="fas fa-umbrella-beach"></i></div>
+                <div class="small fw-semibold text-dark">Gửi đơn nghỉ phép</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4">
+        <a href="{% url 'payroll:my_payslips' %}" class="card text-decoration-none h-100">
+            <div class="card-body text-center py-3">
+                <div class="mb-2" style="font-size:24px;color:#3b7dd8"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div class="small fw-semibold text-dark">Phiếu lương của tôi</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4">
+        <a href="{% url 'accounts:profile' %}" class="card text-decoration-none h-100">
+            <div class="card-body text-center py-3">
+                <div class="mb-2" style="font-size:24px;color:#28a745"><i class="fas fa-circle-user"></i></div>
+                <div class="small fw-semibold text-dark">Hồ sơ cá nhân</div>
+            </div>
+        </a>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

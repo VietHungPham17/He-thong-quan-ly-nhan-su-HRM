@@ -9,6 +9,45 @@
     <h4><i class="fas fa-comments me-2 text-primary"></i>Lịch phỏng vấn</h4>
     <a href="{% url 'recruitment:interview_create' %}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Lên lịch</a>
 </div>
+
+<!-- Filter Bar -->
+<div class="card mb-3">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small text-muted mb-1">Tìm ứng viên</label>
+                <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="Nhập tên ứng viên...">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">Trạng thái</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">-- Tất cả --</option>
+                    {% for val, label in status_choices %}
+                    <option value="{{ val }}" {% if selected_status == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">Hình thức</label>
+                <select name="type" class="form-select form-select-sm">
+                    <option value="">-- Tất cả --</option>
+                    {% for val, label in type_choices %}
+                    <option value="{{ val }}" {% if selected_type == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary flex-fill">
+                    <i class="fas fa-search me-1"></i>Lọc
+                </button>
+                <a href="{% url 'recruitment:interview_list' %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-xmark"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -63,7 +102,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="7" class="text-center text-muted py-4">Chưa có lịch phỏng vấn</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted py-4">Chưa có lịch phỏng vấn nào</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -72,9 +111,9 @@
     {% if page_obj.paginator.num_pages > 1 %}
     <div class="card-footer bg-transparent">
         <nav><ul class="pagination pagination-sm mb-0 justify-content-center">
-            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a></li>{% endif %}
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&status={{ selected_status }}&type={{ selected_type }}&q={{ q }}"><i class="fas fa-chevron-left"></i></a></li>{% endif %}
             {% for num in page_obj.paginator.page_range %}{% if page_obj.number == num %}<li class="page-item active"><span class="page-link">{{ num }}</span></li>{% endif %}{% endfor %}
-            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a></li>{% endif %}
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&status={{ selected_status }}&type={{ selected_type }}&q={{ q }}"><i class="fas fa-chevron-right"></i></a></li>{% endif %}
         </ul></nav>
     </div>
     {% endif %}

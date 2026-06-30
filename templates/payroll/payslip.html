@@ -2,7 +2,11 @@
 {% load currency %}
 {% block title %}Phiếu lương - {{ payroll.employee.full_name }}{% endblock %}
 {% block breadcrumb %}
+{% if user.role == 'admin' or user.role == 'hr' %}
 <li class="breadcrumb-item"><a href="{% url 'payroll:payroll_list' %}">Bảng lương</a></li>
+{% else %}
+<li class="breadcrumb-item"><a href="{% url 'payroll:my_payslips' %}">Phiếu lương của tôi</a></li>
+{% endif %}
 <li class="breadcrumb-item active">Phiếu lương</li>
 {% endblock %}
 {% block content %}

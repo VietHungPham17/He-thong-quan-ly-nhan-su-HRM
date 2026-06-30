@@ -116,6 +116,7 @@ class GeneratePayrollView(HRRequiredMixin, FormView):
     def form_valid(self, form):
         month = int(form.cleaned_data['month'])
         year = int(form.cleaned_data['year'])
+        from apps.attendance.models import AttendanceRecord
         employees = Employee.objects.filter(status='active').prefetch_related('contracts')
         created = 0
         skipped = 0
@@ -125,6 +126,13 @@ class GeneratePayrollView(HRRequiredMixin, FormView):
                 continue
             contract = emp.contracts.filter(status='active').order_by('-start_date').first()
             basic = contract.salary if contract else 0
+            # Đếm ngày công thực tế từ chấm công
+            actual_days = AttendanceRecord.objects.filter(
+                employee=emp,
+                date__year=year,
+                date__month=month,
+                status__in=['present', 'late', 'half_day'],
+            ).count()
             Payroll.objects.create(
                 employee=emp,
                 month=month,
@@ -133,6 +141,8 @@ class GeneratePayrollView(HRRequiredMixin, FormView):
                 allowances_total=0,
                 deductions_total=0,
                 net_salary=basic,
+                working_days=22,
+                actual_working_days=actual_days,
                 status='draft'
             )
             created += 1
@@ -156,11 +166,12 @@ class MyPayslipListView(LoginRequiredMixin, ListView):
         try:
             self._employee = request.user.employee_profile
         except Exception:
-            messages.error(request, 'Bạn chưa có hồ sơ nhân viên. Vui lòng liên hệ phòng Nhân sự.')
-            return redirect('employees:dashboard')
+            self._employee = None  # Không redirect — hiển thị trang rỗng
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
+        if self._employee is None:
+            return Payroll.objects.none()
         return Payroll.objects.filter(
             employee=self._employee
         ).select_related('employee').order_by('-year', '-month')
@@ -168,4 +179,5 @@ class MyPayslipListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['employee'] = self._employee
+        ctx['no_profile'] = self._employee is None
         return ctx

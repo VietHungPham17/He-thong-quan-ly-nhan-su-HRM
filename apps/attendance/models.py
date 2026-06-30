@@ -80,9 +80,13 @@ class AttendanceRecord(models.Model):
 
     def save(self, *args, **kwargs):
         if self.check_in and self.check_out:
-            from datetime import datetime, date
-            dt_in = datetime.combine(date.today(), self.check_in)
-            dt_out = datetime.combine(date.today(), self.check_out)
+            from datetime import datetime
+            dt_in = datetime.combine(self.date, self.check_in)
+            dt_out = datetime.combine(self.date, self.check_out)
+            # Xử lý ca đêm (check_out qua ngày hôm sau)
+            if dt_out <= dt_in:
+                from datetime import timedelta
+                dt_out += timedelta(days=1)
             diff = (dt_out - dt_in).total_seconds() / 3600
             self.work_hours = round(max(0, diff), 2)
         super().save(*args, **kwargs)

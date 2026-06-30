@@ -11,9 +11,11 @@
         <a href="{% url 'recruitment:candidate_pipeline' %}" class="btn btn-outline-primary">
             <i class="fas fa-columns me-1"></i>Kanban
         </a>
+        {% if user.role == 'admin' or user.role == 'hr' %}
         <a href="{% url 'recruitment:candidate_create' %}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i>Thêm ứng viên
         </a>
+        {% endif %}
     </div>
 </div>
 
@@ -74,9 +76,13 @@
                             {% else %}<span class="badge bg-danger">Từ chối</span>{% endif %}
                         </td>
                         <td class="text-center">
+                            {% if user.role == 'admin' or user.role == 'hr' %}
                             <a href="{% url 'recruitment:candidate_edit' c.pk %}" class="btn btn-sm btn-outline-warning">
                                 <i class="fas fa-pen"></i>
                             </a>
+                            {% else %}
+                            <span class="text-muted small">—</span>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}
